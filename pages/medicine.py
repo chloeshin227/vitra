@@ -3,7 +3,7 @@ import requests
 
 # 공공데이터포털에서 발급받은 디코딩된 API 키 입력
 API_KEY = "185a24e9e330b5a71ceb3495879128988532b7ecfd102cba636ae1c408a7450f"
-BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService01/getDrugPrdtPrmsnDtlInq08"
+BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService08"
 
 st.title("💊 의약품 주성분 상세정보 검색")
 st.write("식품의약품안전처 의약품 제품 허가정보 API 활용")
