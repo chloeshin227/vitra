@@ -147,4 +147,75 @@ if st.button("검색하기", type="primary"):
 
                 image_url = item.get(
                     "BIG_PRDT_IMG_URL",
-                    
+                    ""
+                )
+
+                with st.expander(
+                    f"💊 {medicine_name}"
+                ):
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+
+                        st.markdown("### 제품 정보")
+
+                        st.write(
+                            f"**의약품명:** {medicine_name}"
+                        )
+
+                        st.write(
+                            f"**영문명:** {english_name}"
+                        )
+
+                        st.write(
+                            f"**제조사:** {company}"
+                        )
+
+                        st.write(
+                            f"**허가일:** {permit_date}"
+                        )
+
+                    with col2:
+
+                        st.markdown("### 분류 정보")
+
+                        st.write(
+                            f"**전문/일반:** {specialist}"
+                        )
+
+                        st.write(
+                            f"**분류:** {category}"
+                        )
+
+                        st.write(
+                            f"**허가번호:** {permit_no}"
+                        )
+
+                        st.write(
+                            f"**상태:** {status}"
+                        )
+
+                    st.divider()
+
+                    st.markdown("### 주성분")
+
+                    st.write(ingredient)
+
+                    st.info(
+                        f"주성분 개수: {ingredient_count}"
+                    )
+
+                    if edi_code not in [None, "", "-"]:
+                        st.write(
+                            f"EDI 코드: {edi_code}"
+                        )
+
+                    if image_url:
+                        st.image(
+                            image_url,
+                            width=250
+                        )
+
+                    with st.expander("원본 데이터 보기"):
+                        st.json(item)
