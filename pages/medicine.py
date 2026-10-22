@@ -41,7 +41,7 @@ def search_medicine_ingredients(drug_name):
         response = requests.get(
             SEARCH_URL,
             params=params,
-            timeout=20,
+            timeout=60,
         )
 
         if response.status_code != 200:
