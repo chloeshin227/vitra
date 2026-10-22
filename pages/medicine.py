@@ -8,11 +8,16 @@ import requests
 BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService08"
 
 SEARCH_URL = f"{BASE_URL}/getDrugPrdtPrmsnInq08"
-DETAIL_URL = f"{BASE_URL}/getDrugPrdtPrmsnDtlInq08"
 
 # ==================================================
-# 페이지 설정
+# 페이지
 # ==================================================
+
+st.set_page_config(
+    page_title="의약품 검색",
+    page_icon="💊",
+    layout="wide"
+)
 
 st.title("💊 의약품 정보 검색")
 
@@ -21,7 +26,7 @@ st.write(
 )
 
 # ==================================================
-# 의약품 목록 검색
+# API 호출
 # ==================================================
 
 def search_medicine(keyword):
@@ -44,28 +49,12 @@ def search_medicine(keyword):
 
     body = data.get("body", {})
 
-    return body.get("items", [])
+    items = body.get("items", [])
 
+    if not isinstance(items, list):
+        items = []
 
-# ==================================================
-# 상세정보 조회
-# ==================================================
-
-def get_detail(item_seq):
-
-    params = {
-        "serviceKey": st.secrets["MFDS_API_KEY"],
-        "type": "json",
-        "item_seq": item_seq
-    }
-
-    response = requests.get(
-        DETAIL_URL,
-        params=params,
-        timeout=30
-    )
-
-    return response.json()
+    return items
 
 
 # ==================================================
@@ -81,31 +70,25 @@ keyword = st.text_input(
 # 검색 버튼
 # ==================================================
 
-if st.button("검색하기"):
+if st.button("검색하기", type="primary"):
 
-    st.write("✅ 검색 실행")
-
-    if not keyword.strip():
-
-        st.warning("의약품명을 입력해주세요.")
+    if keyword.strip() == "":
+        st.warning("의약품명을 입력하세요.")
 
     else:
 
-        with st.spinner("검색 중..."):
+        with st.spinner("검색 중입니다..."):
 
             items = search_medicine(keyword)
 
-        if len(items) == 0:
+        st.success(f"{len(items)}건 검색")
 
+        if len(items) == 0:
             st.warning("검색 결과가 없습니다.")
 
         else:
 
-            st.success(f"{len(items)}건 검색")
-
             for item in items:
-
-                item_seq = item.get("ITEM_SEQ")
 
                 medicine_name = item.get(
                     "ITEM_NAME",
@@ -117,4 +100,51 @@ if st.button("검색하기"):
                     "-"
                 )
 
-                
+                ingredient = item.get(
+                    "ITEM_INGR_NAME",
+                    "-"
+                )
+
+                permit_date = item.get(
+                    "ITEM_PERMIT_DATE",
+                    "-"
+                )
+
+                category = item.get(
+                    "PRDUCT_TYPE",
+                    "-"
+                )
+
+                specialist = item.get(
+                    "SPCLTY_PBLC",
+                    "-"
+                )
+
+                ingredient_count = item.get(
+                    "ITEM_INGR_CNT",
+                    "-"
+                )
+
+                english_name = item.get(
+                    "ITEM_ENG_NAME",
+                    "-"
+                )
+
+                permit_no = item.get(
+                    "PRDUCT_PRMISN_NO",
+                    "-"
+                )
+
+                edi_code = item.get(
+                    "EDI_CODE",
+                    "-"
+                )
+
+                status = item.get(
+                    "CANCEL_NAME",
+                    "-"
+                )
+
+                image_url = item.get(
+                    "BIG_PRDT_IMG_URL",
+                    
