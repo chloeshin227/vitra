@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import requests
 
@@ -138,4 +137,3 @@ if st.button("검색하기"):
                     "검색 결과가 없습니다. "
                     "API의 검색 조건과 응답 구조를 확인해 주세요."
                 )
-```
