@@ -72,6 +72,8 @@ def search_medicine_ingredients(drug_name):
             return None
 
         items = body.get("items", [])
+        st.write("API 응답 구조 확인")
+        st.json(items[0] if items else body)
 
         # API에 따라 items가 딕셔너리로 반환될 수 있음
         if isinstance(items, dict):
