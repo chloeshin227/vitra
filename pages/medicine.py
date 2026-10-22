@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import requests
 
@@ -207,4 +206,3 @@ st.caption(
     "본 페이지는 식품의약품안전처 공개 API를 활용한 정보 검색용입니다. "
     "실제 의약품의 사용 여부와 복용 방법은 의료진 또는 약사에게 확인하세요."
 )
-```
