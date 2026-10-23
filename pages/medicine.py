@@ -1,21 +1,49 @@
 import streamlit as st
 import requests
 
-BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService08"
+# ==================================================
+# API 설정
+# ==================================================
 
-SEARCH_URL = f"{BASE_URL}/getDrugPrdtPrmsnInq08"
-DETAIL_URL = f"{BASE_URL}/getDrugPrdtPrmsnDtlInq08"
+API_KEY = st.secrets["MFDS_API_KEY"]
 
-st.title("💊 의약품 정보 검색")
+BASE_URL = (
+    "https://apis.data.go.kr/1471000/"
+    "DrbEasyDrugInfoService"
+)
+
+SEARCH_URL = (
+    f"{BASE_URL}/getDrbEasyDrugList"
+)
+
+# ==================================================
+# 페이지 설정
+# ==================================================
+
+st.set_page_config(
+    page_title="의약품 정보 검색",
+    page_icon="💊",
+    layout="wide"
+)
+
+st.title("💊 의약품 검색")
+
+st.write(
+    "의약품의 효능, 복용방법, 주의사항을 쉽게 확인할 수 있습니다."
+)
+
+# ==================================================
+# 검색 함수
+# ==================================================
 
 def search_medicine(keyword):
 
     params = {
-        "serviceKey": st.secrets["MFDS_API_KEY"],
-        "type": "json",
+        "serviceKey": API_KEY,
         "pageNo": 1,
         "numOfRows": 20,
-        "item_name": keyword
+        "itemName": keyword,
+        "type": "json"
     }
 
     response = requests.get(
@@ -26,71 +54,185 @@ def search_medicine(keyword):
 
     data = response.json()
 
-    return data.get("body", {}).get("items", [])
+    body = data.get("body", {})
 
+    items = body.get("items", [])
 
-def get_detail(item_seq):
+    if isinstance(items, dict):
+        items = [items]
 
-    params = {
-        "serviceKey": st.secrets["MFDS_API_KEY"],
-        "type": "json",
-        "item_seq": item_seq
-    }
+    return items
 
-    response = requests.get(
-        DETAIL_URL,
-        params=params,
-        timeout=30
-    )
-
-    return response.json()
-
-
-# 검색 결과 저장
-if "results" not in st.session_state:
-    st.session_state.results = []
+# ==================================================
+# 검색창
+# ==================================================
 
 keyword = st.text_input(
-    "검색할 의약품명",
+    "검색할 의약품명을 입력하세요",
     placeholder="예: 타이레놀"
 )
 
-if st.button("검색하기"):
+# ==================================================
+# 검색
+# ==================================================
 
-    st.session_state.results = search_medicine(keyword)
+if st.button("검색하기", type="primary"):
 
-results = st.session_state.results
+    if keyword.strip() == "":
+        st.warning("의약품명을 입력하세요.")
 
-if len(results) > 0:
+    else:
 
-    st.success(f"{len(results)}건 검색")
+        with st.spinner("검색 중..."):
 
-    for item in results:
+            items = search_medicine(keyword)
 
-        medicine_name = item.get("ITEM_NAME", "-")
-        item_seq = item.get("ITEM_SEQ")
+        if len(items) == 0:
 
-        with st.expander(f"💊 {medicine_name}"):
+            st.warning("검색 결과가 없습니다.")
 
-            st.write(
-                f"제조사 : {item.get('ENTP_NAME','-')}"
+        else:
+
+            st.success(
+                f"{len(items)}건 검색되었습니다."
             )
 
-            st.write(
-                f"주성분 : {item.get('ITEM_INGR_NAME','-')}"
-            )
+            for item in items:
 
-            st.write(
-                f"허가일 : {item.get('ITEM_PERMIT_DATE','-')}"
-            )
+                medicine_name = item.get(
+                    "itemName",
+                    "의약품명 없음"
+                )
 
-            if st.button(
-                f"상세정보 조회",
-                key=f"detail_{item_seq}"
-            ):
+                company = item.get(
+                    "entpName",
+                    "-"
+                )
 
-                detail = get_detail(item_seq)
+                with st.expander(
+                    f"💊 {medicine_name}"
+                ):
 
-                st.subheader("상세 API 응답")
+                    # ==================================================
+                    # 환자용 설명
+                    # ==================================================
 
-                st.json(detail)
+                    st.markdown("## 😊 환자용 설명")
+
+                    st.markdown(
+                        "### 📋 효능 · 효과"
+                    )
+
+                    st.write(
+                        item.get(
+                            "efcyQesitm",
+                            "정보 없음"
+                        )
+                    )
+
+                    st.markdown(
+                        "### 💊 복용 방법"
+                    )
+
+                    st.write(
+                        item.get(
+                            "useMethodQesitm",
+                            "정보 없음"
+                        )
+                    )
+
+                    st.markdown(
+                        "### ⚠️ 복용 시 주의사항"
+                    )
+
+                    st.write(
+                        item.get(
+                            "atpnQesitm",
+                            "정보 없음"
+                        )
+                    )
+
+                    st.markdown(
+                        "### 🚨 중요 경고"
+                    )
+
+                    st.warning(
+                        item.get(
+                            "atpnWarnQesitm",
+                            "정보 없음"
+                        )
+                    )
+
+                    st.markdown(
+                        "### 🚫 약물 상호작용"
+                    )
+
+                    st.write(
+                        item.get(
+                            "intrcQesitm",
+                            "정보 없음"
+                        )
+                    )
+
+                    st.markdown(
+                        "### 🤒 부작용"
+                    )
+
+                    st.write(
+                        item.get(
+                            "seQesitm",
+                            "정보 없음"
+                        )
+                    )
+
+                    st.markdown(
+                        "### 📦 보관 방법"
+                    )
+
+                    st.write(
+                        item.get(
+                            "depositMethodQesitm",
+                            "정보 없음"
+                        )
+                    )
+
+                    st.divider()
+
+                    # ==================================================
+                    # 의료진 참고 정보
+                    # ==================================================
+
+                    with st.expander(
+                        "👨‍⚕️ 의료진 참고 정보"
+                    ):
+
+                        st.write(
+                            f"제조사: {company}"
+                        )
+
+                        st.write(
+                            f"품목기준코드: {item.get('itemSeq', '-')}"
+                        )
+
+                        st.write(
+                            f"공개일자: {item.get('openDe', '-')}"
+                        )
+
+                        st.write(
+                            f"최종 수정일: {item.get('updateDe', '-')}"
+                        )
+
+                        if item.get("bizrno"):
+                            st.write(
+                                f"사업자번호: {item.get('bizrno')}"
+                            )
+
+# ==================================================
+# 하단 안내
+# ==================================================
+
+st.divider()
+
+st.caption(
+    "본 정보는 식품의약품안전처 의약품개요정보(e약은요)를 기반으로 제공합니다."
+)
