@@ -1,33 +1,12 @@
 import streamlit as st
 import requests
 
-# ==================================================
-# API 설정
-# ==================================================
-
 BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService08"
 
 SEARCH_URL = f"{BASE_URL}/getDrugPrdtPrmsnInq08"
+DETAIL_URL = f"{BASE_URL}/getDrugPrdtPrmsnDtlInq08"
 
-# ==================================================
-# 페이지
-# ==================================================
-
-st.set_page_config(
-    page_title="의약품 검색",
-    page_icon="💊",
-    layout="wide"
-)
-
-st.title("💊 의약품 정보 검색")
-
-st.write(
-    "식품의약품안전처 의약품 제품 허가정보 API를 활용한 검색 서비스"
-)
-
-# ==================================================
-# API 호출
-# ==================================================
+st.title("💊 의약품 검색")
 
 def search_medicine(keyword):
 
@@ -47,175 +26,58 @@ def search_medicine(keyword):
 
     data = response.json()
 
-    body = data.get("body", {})
-
-    items = body.get("items", [])
-
-    if not isinstance(items, list):
-        items = []
-
-    return items
+    return data["body"]["items"]
 
 
-# ==================================================
-# 검색창
-# ==================================================
+def get_detail(item_seq):
+
+    params = {
+        "serviceKey": st.secrets["MFDS_API_KEY"],
+        "type": "json",
+        "item_seq": item_seq
+    }
+
+    response = requests.get(
+        DETAIL_URL,
+        params=params,
+        timeout=30
+    )
+
+    return response.json()
+
 
 keyword = st.text_input(
-    "검색할 의약품명을 입력하세요",
-    placeholder="예: 타이레놀"
+    "검색어",
+    placeholder="타이레놀"
 )
 
-# ==================================================
-# 검색 버튼
-# ==================================================
+if st.button("검색"):
 
-if st.button("검색하기", type="primary"):
+    items = search_medicine(keyword)
 
-    if keyword.strip() == "":
-        st.warning("의약품명을 입력하세요.")
+    for item in items:
 
-    else:
+        medicine_name = item.get("ITEM_NAME")
 
-        with st.spinner("검색 중입니다..."):
+        with st.expander(medicine_name):
 
-            items = search_medicine(keyword)
+            st.write(
+                f"제조사 : {item.get('ENTP_NAME')}"
+            )
 
-        st.success(f"{len(items)}건 검색")
+            st.write(
+                f"성분 : {item.get('ITEM_INGR_NAME')}"
+            )
 
-        if len(items) == 0:
-            st.warning("검색 결과가 없습니다.")
+            item_seq = item.get("ITEM_SEQ")
 
-        else:
+            if st.button(
+                "상세정보 조회",
+                key=item_seq
+            ):
 
-            for item in items:
+                detail = get_detail(item_seq)
 
-                medicine_name = item.get(
-                    "ITEM_NAME",
-                    "-"
-                )
+                st.subheader("상세 API 응답")
 
-                company = item.get(
-                    "ENTP_NAME",
-                    "-"
-                )
-
-                ingredient = item.get(
-                    "ITEM_INGR_NAME",
-                    "-"
-                )
-
-                permit_date = item.get(
-                    "ITEM_PERMIT_DATE",
-                    "-"
-                )
-
-                category = item.get(
-                    "PRDUCT_TYPE",
-                    "-"
-                )
-
-                specialist = item.get(
-                    "SPCLTY_PBLC",
-                    "-"
-                )
-
-                ingredient_count = item.get(
-                    "ITEM_INGR_CNT",
-                    "-"
-                )
-
-                english_name = item.get(
-                    "ITEM_ENG_NAME",
-                    "-"
-                )
-
-                permit_no = item.get(
-                    "PRDUCT_PRMISN_NO",
-                    "-"
-                )
-
-                edi_code = item.get(
-                    "EDI_CODE",
-                    "-"
-                )
-
-                status = item.get(
-                    "CANCEL_NAME",
-                    "-"
-                )
-
-                image_url = item.get(
-                    "BIG_PRDT_IMG_URL",
-                    ""
-                )
-
-                with st.expander(
-                    f"💊 {medicine_name}"
-                ):
-
-                    col1, col2 = st.columns(2)
-
-                    with col1:
-
-                        st.markdown("### 제품 정보")
-
-                        st.write(
-                            f"**의약품명:** {medicine_name}"
-                        )
-
-                        st.write(
-                            f"**영문명:** {english_name}"
-                        )
-
-                        st.write(
-                            f"**제조사:** {company}"
-                        )
-
-                        st.write(
-                            f"**허가일:** {permit_date}"
-                        )
-
-                    with col2:
-
-                        st.markdown("### 분류 정보")
-
-                        st.write(
-                            f"**전문/일반:** {specialist}"
-                        )
-
-                        st.write(
-                            f"**분류:** {category}"
-                        )
-
-                        st.write(
-                            f"**허가번호:** {permit_no}"
-                        )
-
-                        st.write(
-                            f"**상태:** {status}"
-                        )
-
-                    st.divider()
-
-                    st.markdown("### 주성분")
-
-                    st.write(ingredient)
-
-                    st.info(
-                        f"주성분 개수: {ingredient_count}"
-                    )
-
-                    if edi_code not in [None, "", "-"]:
-                        st.write(
-                            f"EDI 코드: {edi_code}"
-                        )
-
-                    if image_url:
-                        st.image(
-                            image_url,
-                            width=250
-                        )
-
-                    with st.expander("원본 데이터 보기"):
-                        st.json(item)
+                st.json(detail)
