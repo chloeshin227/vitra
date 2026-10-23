@@ -6,7 +6,7 @@ BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService08"
 SEARCH_URL = f"{BASE_URL}/getDrugPrdtPrmsnInq08"
 DETAIL_URL = f"{BASE_URL}/getDrugPrdtPrmsnDtlInq08"
 
-st.title("💊 의약품 검색")
+st.title("💊 의약품 정보 검색")
 
 def search_medicine(keyword):
 
@@ -26,7 +26,7 @@ def search_medicine(keyword):
 
     data = response.json()
 
-    return data["body"]["items"]
+    return data.get("body", {}).get("items", [])
 
 
 def get_detail(item_seq):
@@ -46,34 +46,47 @@ def get_detail(item_seq):
     return response.json()
 
 
+# 검색 결과 저장
+if "results" not in st.session_state:
+    st.session_state.results = []
+
 keyword = st.text_input(
-    "검색어",
-    placeholder="타이레놀"
+    "검색할 의약품명",
+    placeholder="예: 타이레놀"
 )
 
-if st.button("검색"):
+if st.button("검색하기"):
 
-    items = search_medicine(keyword)
+    st.session_state.results = search_medicine(keyword)
 
-    for item in items:
+results = st.session_state.results
 
-        medicine_name = item.get("ITEM_NAME")
+if len(results) > 0:
 
-        with st.expander(medicine_name):
+    st.success(f"{len(results)}건 검색")
+
+    for item in results:
+
+        medicine_name = item.get("ITEM_NAME", "-")
+        item_seq = item.get("ITEM_SEQ")
+
+        with st.expander(f"💊 {medicine_name}"):
 
             st.write(
-                f"제조사 : {item.get('ENTP_NAME')}"
+                f"제조사 : {item.get('ENTP_NAME','-')}"
             )
 
             st.write(
-                f"성분 : {item.get('ITEM_INGR_NAME')}"
+                f"주성분 : {item.get('ITEM_INGR_NAME','-')}"
             )
 
-            item_seq = item.get("ITEM_SEQ")
+            st.write(
+                f"허가일 : {item.get('ITEM_PERMIT_DATE','-')}"
+            )
 
             if st.button(
-                "상세정보 조회",
-                key=item_seq
+                f"상세정보 조회",
+                key=f"detail_{item_seq}"
             ):
 
                 detail = get_detail(item_seq)
