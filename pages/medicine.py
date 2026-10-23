@@ -2,6 +2,67 @@ import streamlit as st
 import requests
 
 # ==================================================
+# 페이지 설정
+# ==================================================
+
+st.set_page_config(
+    page_title="의약품 정보",
+    page_icon="💊",
+    layout="wide"
+)
+
+# ==================================================
+# 스타일
+# ==================================================
+
+st.markdown("""
+<style>
+
+.hero-box {
+    padding: 1.5rem;
+    border-radius: 18px;
+    background: linear-gradient(
+        135deg,
+        #eef6ff 0%,
+        #f8fbff 60%,
+        #eefbf7 100%
+    );
+    border: 1px solid #dce9f5;
+    margin-bottom: 1.5rem;
+}
+
+.drug-card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #e3ebf3;
+}
+
+.info-box {
+    background: #eef8ff;
+    padding: 15px;
+    border-radius: 12px;
+    border-left: 6px solid #2196F3;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# ==================================================
+# 상단 설명
+# ==================================================
+
+st.markdown("""
+<div class="hero-box">
+    <h1>💊 의약품 정보 검색</h1>
+    <p>
+        식품의약품안전처 e약은요 데이터를 기반으로
+        환자가 이해하기 쉬운 의약품 정보를 제공합니다.
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+# ==================================================
 # API 설정
 # ==================================================
 
@@ -9,72 +70,27 @@ API_KEY = st.secrets["MFDS_API_KEY"]
 
 BASE_URL = (
     "https://apis.data.go.kr/1471000/"
-    "DrbEasyDrugInfoService"
-)
-
-SEARCH_URL = (
-    f"{BASE_URL}/getDrbEasyDrugList"
+    "DrbEasyDrugInfoService/getDrbEasyDrugList"
 )
 
 # ==================================================
-# 페이지 설정
+# 텍스트 정리
 # ==================================================
 
-st.set_page_config(
-    page_title="의약품 정보 검색",
-    page_icon="💊",
-    layout="wide"
-)
-st.markdown("""
-<style>
+def safe_text(text):
 
-.patient-card {
-    background:#f8fbff;
-    padding:20px;
-    border-radius:15px;
-    border:1px solid #dfe9f3;
-    margin-bottom:15px;
-}
+    if text is None:
+        return "정보 없음"
 
-.section-title {
-    font-size:20px;
-    font-weight:700;
-    color:#1b4965;
-    margin-top:15px;
-}
+    text = str(text)
 
-.easy-box {
-    background:#eef7ee;
-    border-left:6px solid #4caf50;
-    padding:15px;
-    border-radius:10px;
-    margin-top:10px;
-}
+    # 취소선 방지
+    text = text.replace("~", "\\~")
 
-.warning-box {
-    background:#fff7e6;
-    border-left:6px solid #ff9800;
-    padding:15px;
-    border-radius:10px;
-    margin-top:10px;
-}
+    # 줄바꿈 유지
+    text = text.replace("\n", "\n\n")
 
-.danger-box {
-    background:#ffeaea;
-    border-left:6px solid #f44336;
-    padding:15px;
-    border-radius:10px;
-    margin-top:10px;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-st.title("💊 의약품 검색")
-
-st.write(
-    "의약품의 효능, 복용방법, 주의사항을 쉽게 확인할 수 있습니다."
-)
+    return text
 
 # ==================================================
 # 검색 함수
@@ -84,14 +100,14 @@ def search_medicine(keyword):
 
     params = {
         "serviceKey": API_KEY,
+        "itemName": keyword,
         "pageNo": 1,
         "numOfRows": 20,
-        "itemName": keyword,
         "type": "json"
     }
 
     response = requests.get(
-        SEARCH_URL,
+        BASE_URL,
         params=params,
         timeout=30
     )
@@ -112,7 +128,7 @@ def search_medicine(keyword):
 # ==================================================
 
 keyword = st.text_input(
-    "검색할 의약품명을 입력하세요",
+    "의약품명을 검색하세요",
     placeholder="예: 타이레놀"
 )
 
@@ -120,20 +136,33 @@ keyword = st.text_input(
 # 검색
 # ==================================================
 
-if st.button("검색하기", type="primary"):
+if st.button(
+    "🔍 검색하기",
+    type="primary",
+    use_container_width=True
+):
 
-    if keyword.strip() == "":
-        st.warning("의약품명을 입력하세요.")
+    if not keyword.strip():
+
+        st.warning(
+            "의약품명을 입력해주세요."
+        )
 
     else:
 
-        with st.spinner("검색 중..."):
+        with st.spinner(
+            "의약품 정보를 불러오는 중..."
+        ):
 
-            items = search_medicine(keyword)
+            items = search_medicine(
+                keyword
+            )
 
         if len(items) == 0:
 
-            st.warning("검색 결과가 없습니다.")
+            st.warning(
+                "검색 결과가 없습니다."
+            )
 
         else:
 
@@ -157,94 +186,87 @@ if st.button("검색하기", type="primary"):
                     f"💊 {medicine_name}"
                 ):
 
-                    # ==================================================
-                    # 환자용 설명
-                    # ==================================================
-
-                    st.markdown("## 😊 환자용 설명")
-
                     st.markdown(
-                        "### 📋 효능 · 효과"
+                        f"""
+                        <div class="drug-card">
+                        <h3>{medicine_name}</h3>
+                        <b>제조사:</b> {company}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
                     )
 
-                    st.write(
-                        item.get(
-                            "efcyQesitm",
-                            "정보 없음"
+                    st.markdown("### 📋 어떤 증상에 사용하나요?")
+
+                    st.success(
+                        safe_text(
+                            item.get(
+                                "efcyQesitm"
+                            )
                         )
                     )
 
-                    st.markdown(
-                        "### 💊 복용 방법"
-                    )
+                    st.markdown("### 💊 어떻게 복용하나요?")
 
-                    st.write(
-                        item.get(
-                            "useMethodQesitm",
-                            "정보 없음"
+                    st.info(
+                        safe_text(
+                            item.get(
+                                "useMethodQesitm"
+                            )
                         )
                     )
 
-                    st.markdown(
-                        "### ⚠️ 복용 시 주의사항"
-                    )
-
-                    st.write(
-                        item.get(
-                            "atpnQesitm",
-                            "정보 없음"
-                        )
-                    )
-
-                    st.markdown(
-                        "### 🚨 중요 경고"
-                    )
+                    st.markdown("### ⚠️ 복용 전 반드시 확인하세요")
 
                     st.warning(
-                        item.get(
-                            "atpnWarnQesitm",
-                            "정보 없음"
+                        safe_text(
+                            item.get(
+                                "atpnQesitm"
+                            )
                         )
                     )
 
-                    st.markdown(
-                        "### 🚫 약물 상호작용"
-                    )
+                    st.markdown("### 🚨 중요한 경고")
 
-                    st.write(
-                        item.get(
-                            "intrcQesitm",
-                            "정보 없음"
+                    st.error(
+                        safe_text(
+                            item.get(
+                                "atpnWarnQesitm"
+                            )
                         )
                     )
 
-                    st.markdown(
-                        "### 🤒 부작용"
-                    )
+                    st.markdown("### 🚫 함께 복용 시 주의")
 
-                    st.write(
-                        item.get(
-                            "seQesitm",
-                            "정보 없음"
+                    st.markdown(
+                        safe_text(
+                            item.get(
+                                "intrcQesitm"
+                            )
                         )
                     )
 
+                    st.markdown("### 🤒 발생 가능한 부작용")
+
                     st.markdown(
-                        "### 📦 보관 방법"
+                        safe_text(
+                            item.get(
+                                "seQesitm"
+                            )
+                        )
                     )
 
-                    st.write(
-                        item.get(
-                            "depositMethodQesitm",
-                            "정보 없음"
+                    st.markdown("### 📦 보관 방법")
+
+                    st.info(
+                        safe_text(
+                            item.get(
+                                "depositMethodQesitm"
+                            )
                         )
                     )
 
                     st.divider()
-
-                    # ==================================================
-                    # 의료진 참고 정보
-                    # ==================================================
 
                     with st.expander(
                         "👨‍⚕️ 의료진 참고 정보"
@@ -255,15 +277,15 @@ if st.button("검색하기", type="primary"):
                         )
 
                         st.write(
-                            f"품목기준코드: {item.get('itemSeq', '-')}"
+                            f"품목코드: {item.get('itemSeq','-')}"
                         )
 
                         st.write(
-                            f"공개일자: {item.get('openDe', '-')}"
+                            f"공개일: {item.get('openDe','-')}"
                         )
 
                         st.write(
-                            f"최종 수정일: {item.get('updateDe', '-')}"
+                            f"수정일: {item.get('updateDe','-')}"
                         )
 
                         if item.get("bizrno"):
@@ -272,11 +294,11 @@ if st.button("검색하기", type="primary"):
                             )
 
 # ==================================================
-# 하단 안내
+# 안내
 # ==================================================
 
 st.divider()
 
 st.caption(
-    "본 정보는 식품의약품안전처 의약품개요정보(e약은요)를 기반으로 제공합니다."
+    "※ 본 정보는 식품의약품안전처 e약은요(OpenAPI)를 기반으로 제공됩니다."
 )
