@@ -25,6 +25,50 @@ st.set_page_config(
     page_icon="💊",
     layout="wide"
 )
+st.markdown("""
+<style>
+
+.patient-card {
+    background:#f8fbff;
+    padding:20px;
+    border-radius:15px;
+    border:1px solid #dfe9f3;
+    margin-bottom:15px;
+}
+
+.section-title {
+    font-size:20px;
+    font-weight:700;
+    color:#1b4965;
+    margin-top:15px;
+}
+
+.easy-box {
+    background:#eef7ee;
+    border-left:6px solid #4caf50;
+    padding:15px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+.warning-box {
+    background:#fff7e6;
+    border-left:6px solid #ff9800;
+    padding:15px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+.danger-box {
+    background:#ffeaea;
+    border-left:6px solid #f44336;
+    padding:15px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 st.title("💊 의약품 검색")
 
