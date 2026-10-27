@@ -1616,3 +1616,258 @@ def show_body_image():
 
 
 show_body_image()
+
+# =========================================================
+# VITRA 공공 질병명·상병코드 검색 API
+# 기존 코드 맨 아래에 추가
+# =========================================================
+
+import requests
+import xml.etree.ElementTree as ET
+
+
+HIRA_DISEASE_API_URL = (
+    "https://apis.data.go.kr/B551182/"
+    "diseaseInfoService1/getDissNameCodeList"
+)
+
+
+def get_hira_api_key():
+    """Streamlit Secrets에서 HIRA 인증키를 가져옵니다."""
+    possible_keys = [
+        "HIRA_API_KEY",
+        "hira_api_key",
+        "HIRA_SERVICE_KEY",
+    ]
+
+    for key_name in possible_keys:
+        try:
+            key_value = st.secrets.get(key_name)
+            if key_value:
+                return str(key_value)
+        except Exception:
+            pass
+
+    return None
+
+
+def get_xml_value(item, possible_names):
+    """XML 태그의 대소문자 차이를 고려해 값을 찾습니다."""
+    for element in item.iter():
+        tag_name = element.tag.split("}")[-1].lower()
+
+        if tag_name in [name.lower() for name in possible_names]:
+            if element.text:
+                return element.text.strip()
+
+    return ""
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def search_hira_diseases(search_text, api_key):
+    """건강보험심사평가원 API에서 질병명칭과 코드를 검색합니다."""
+
+    params = {
+        "ServiceKey": api_key,
+        "pageNo": "1",
+        "numOfRows": "20",
+        "SICK_NM": search_text,
+    }
+
+    response = requests.get(
+        HIRA_DISEASE_API_URL,
+        params=params,
+        timeout=15,
+    )
+
+    response.raise_for_status()
+
+    root = ET.fromstring(response.content)
+
+    # API가 반환한 오류 확인
+    result_code = get_xml_value(
+        root,
+        ["resultCode", "RESULTCODE"],
+    )
+    result_message = get_xml_value(
+        root,
+        ["resultMsg", "RESULTMSG"],
+    )
+
+    if result_code and result_code not in ["00", "0000"]:
+        raise ValueError(
+            f"API 응답 오류: {result_code} - {result_message}"
+        )
+
+    items = []
+
+    for item in root.iter():
+        tag_name = item.tag.split("}")[-1].lower()
+
+        if tag_name != "item":
+            continue
+
+        disease_code = get_xml_value(
+            item,
+            ["sickCd", "SICK_CD"],
+        )
+        disease_name = get_xml_value(
+            item,
+            ["sickNm", "SICK_NM"],
+        )
+        english_name = get_xml_value(
+            item,
+            ["engNm", "ENG_NM", "engSickNm"],
+        )
+
+        if disease_name or disease_code:
+            items.append({
+                "질병명": disease_name or "정보 없음",
+                "상병코드": disease_code or "정보 없음",
+                "영문명": english_name or "정보 없음",
+            })
+
+    # 중복 결과 제거
+    unique_items = []
+    seen = set()
+
+    for item in items:
+        identity = (
+            item["상병코드"],
+            item["질병명"],
+        )
+
+        if identity not in seen:
+            seen.add(identity)
+            unique_items.append(item)
+
+    return unique_items
+
+
+# =========================================================
+# 공공 질병 검색 화면
+# =========================================================
+
+st.divider()
+st.header("🔎 공공 질병명·상병코드 검색")
+
+st.write(
+    "건강보험심사평가원 질병정보서비스를 이용해 "
+    "질병명과 상병코드를 검색합니다."
+)
+
+st.caption(
+    "검색 결과는 공공 API에서 제공하는 정보입니다. "
+    "이 결과만으로 질환의 해부학적 위치나 치료·수술 과정을 "
+    "확정하지 않습니다."
+)
+
+with st.form("hira_disease_search_form"):
+    hira_search_text = st.text_input(
+        "검색할 질병명",
+        placeholder="예: 충수염, 장폐색, 탈장",
+    )
+
+    hira_search_button = st.form_submit_button(
+        "공공 질병정보 검색",
+        use_container_width=True,
+    )
+
+if hira_search_button:
+    if not hira_search_text.strip():
+        st.warning("검색할 질병명을 입력해 주세요.")
+
+    else:
+        hira_api_key = get_hira_api_key()
+
+        if not hira_api_key:
+            st.error(
+                "HIRA API 인증키를 찾을 수 없습니다. "
+                "Streamlit Secrets에 HIRA_API_KEY를 등록해 주세요."
+            )
+
+        else:
+            try:
+                with st.spinner("공공 질병정보를 검색하고 있습니다..."):
+                    hira_results = search_hira_diseases(
+                        hira_search_text.strip(),
+                        hira_api_key,
+                    )
+
+                if hira_results:
+                    st.success(
+                        f"{len(hira_results)}개의 결과를 찾았습니다."
+                    )
+
+                    for index, disease in enumerate(hira_results):
+                        with st.container(border=True):
+                            st.markdown(
+                                f"**{index + 1}. "
+                                f"{disease['질병명']}**"
+                            )
+
+                            st.write(
+                                f"상병코드: {disease['상병코드']}"
+                            )
+
+                            st.write(
+                                f"영문명: {disease['영문명']}"
+                            )
+
+                            # 기존 VITRA 시각화 데이터에 등록된 질환인지 확인
+                            matched_disease = None
+
+                            for registered_name, info in DISEASE_DATA.items():
+                                if (
+                                    disease["질병명"] == registered_name
+                                    or disease["질병명"]
+                                    in info["keywords"]
+                                ):
+                                    matched_disease = registered_name
+                                    break
+
+                            if matched_disease:
+                                st.success(
+                                    f"VITRA 등록 질환: {matched_disease}"
+                                )
+                                st.caption(
+                                    "기존 VITRA의 질환 시각화 데이터에 "
+                                    "연결할 수 있는 질환입니다."
+                                )
+                            else:
+                                st.info(
+                                    "질병명·코드 조회 가능 / "
+                                    "VITRA 시각화 정보는 아직 미등록"
+                                )
+
+                else:
+                    st.info(
+                        "검색 결과가 없습니다. "
+                        "질병명의 일부만 입력해 다시 검색해 보세요."
+                    )
+
+            except requests.exceptions.Timeout:
+                st.error(
+                    "API 응답 시간이 초과되었습니다. "
+                    "잠시 후 다시 시도해 주세요."
+                )
+
+            except requests.exceptions.RequestException as error:
+                st.error(
+                    "API 연결에 실패했습니다. "
+                    "인증키와 API 주소, 네트워크 상태를 확인해 주세요."
+                )
+                st.caption(str(error))
+
+            except ET.ParseError:
+                st.error(
+                    "API 응답을 XML로 읽을 수 없습니다. "
+                    "인증키나 API 응답 형식을 확인해 주세요."
+                )
+
+            except ValueError as error:
+                st.error(str(error))
+
+            except Exception as error:
+                st.error("검색 중 예상하지 못한 오류가 발생했습니다.")
+                st.caption(str(error))
