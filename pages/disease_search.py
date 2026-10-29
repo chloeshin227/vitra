@@ -1,6 +1,11 @@
 import streamlit as st
 import requests
 import xml.etree.ElementTree as ET
+HIRA_DISEASE_API_URL = (
+    "https://apis.data.go.kr/"
+    "B551182/diseaseInfoService1/getDissNameCodeList1"
+)
+
 def search_hira_diseases(search_text, api_key):
     """건강보험심사평가원 API에서 질병명칭과 코드를 검색합니다."""
 
