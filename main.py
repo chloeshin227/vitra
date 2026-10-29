@@ -2116,12 +2116,9 @@ if api_search_submit:
         st.warning("검색할 질병명을 입력해 주세요.")
     else:
         try:
-            api_key = st.secrets["HIRA_API_KEY"]
-
             with st.spinner("HIRA API에 연결하고 있습니다..."):
                 api_results = search_hira_disease(
                     api_search_text.strip(),
-                    api_key,
                 )
 
             if not api_results:
