@@ -1752,6 +1752,7 @@ def get_xml_value(item, possible_names):
 
 
 @st.cache_data(ttl=600, show_spinner=False)
+
 def search_hira_diseases(search_text, api_key):
     """건강보험심사평가원 API에서 질병명칭과 코드를 검색합니다."""
 
