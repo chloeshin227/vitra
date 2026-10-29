@@ -1959,3 +1959,153 @@ if hira_search_button:
             except Exception as error:
                 st.error("검색 중 예상하지 못한 오류가 발생했습니다.")
                 st.caption(str(error))
+
+
+
+# =========================================================
+# VITRA 8차시: HIRA 질병정보 API 연결
+# main.py 맨 아래에 추가
+# =========================================================
+
+import requests
+import xml.etree.ElementTree as ET
+
+
+HIRA_DISEASE_API_URL = (
+    "https://apis.data.go.kr/B551182/"
+    "diseaseInfoService/getDissNameCodeList"
+)
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def search_hira_disease(search_text, api_key):
+    """HIRA API에서 질병명과 상병코드를 검색합니다."""
+
+    params = {
+        "ServiceKey": api_key,
+        "pageNo": "1",
+        "numOfRows": "20",
+        "sickType": "1",
+        "medTp": "1",
+        "diseaseType": "SICK_NM",
+        "searchText": search_text,
+    }
+
+    response = requests.get(
+        HIRA_DISEASE_API_URL,
+        params=params,
+        timeout=20,
+    )
+
+    response.raise_for_status()
+    root = ET.fromstring(response.content)
+
+    def find_text(element, tag):
+        for node in element.iter():
+            if node.tag.split("}")[-1].lower() == tag.lower():
+                return (node.text or "").strip()
+        return ""
+
+    result_code = find_text(root, "resultCode")
+    result_msg = find_text(root, "resultMsg")
+
+    if result_code and result_code != "00":
+        raise ValueError(
+            f"HIRA API 오류 {result_code}: {result_msg}"
+        )
+
+    results = []
+
+    for item in root.iter():
+        if item.tag.split("}")[-1].lower() != "item":
+            continue
+
+        name = find_text(item, "sickNm")
+        code = find_text(item, "sickCd")
+        english = find_text(item, "sickEngNm")
+
+        if name or code:
+            results.append({
+                "질병명": name or "정보 없음",
+                "상병코드": code or "정보 없음",
+                "영문명": english or "정보 없음",
+            })
+
+    return results
+
+
+# ---------------------------------------------------------
+# API 검색 화면
+# ---------------------------------------------------------
+
+st.divider()
+st.header("🌐 HIRA 공공 질병정보 API")
+st.write("건강보험심사평가원에서 질병명과 상병코드를 조회합니다.")
+
+st.caption(
+    "API에서 조회되는 질병명 전체가 VITRA의 증상 분석 대상인 것은 아닙니다. "
+    "기존 분석 데이터가 있는 질환만 신체·치료 시각화에 연결됩니다."
+)
+
+with st.form("hira_api_search_form"):
+    api_search_text = st.text_input(
+        "질병명 검색",
+        placeholder="예: 장염, 췌장염, 충수염",
+    )
+    api_search_submit = st.form_submit_button(
+        "HIRA API 검색",
+        use_container_width=True,
+    )
+
+if api_search_submit:
+    if not api_search_text.strip():
+        st.warning("검색할 질병명을 입력해 주세요.")
+    else:
+        try:
+            api_key = st.secrets["HIRA_API_KEY"]
+
+            with st.spinner("HIRA API에 연결하고 있습니다..."):
+                api_results = search_hira_disease(
+                    api_search_text.strip(),
+                    api_key,
+                )
+
+            if not api_results:
+                st.info("검색 결과가 없습니다. 다른 질병명을 입력해 보세요.")
+            else:
+                st.success(f"API 검색 결과: {len(api_results)}건")
+
+                for item in api_results:
+                    with st.container(border=True):
+                        st.markdown(f"**{item['질병명']}**")
+                        st.write(f"상병코드: {item['상병코드']}")
+                        st.write(f"영문명: {item['영문명']}")
+
+                        # 실제 분석 데이터가 존재하는지 확인
+                        if item["질병명"] in DISEASE_DATA:
+                            st.success(
+                                "VITRA 분석 지원: 기존 질환 데이터와 연결됨"
+                            )
+                        else:
+                            st.warning(
+                                "질병명 조회 가능 · VITRA 분석 데이터 미등록"
+                            )
+
+        except KeyError:
+            st.error(
+                "Streamlit Secrets에 HIRA_API_KEY를 등록해 주세요."
+            )
+        except requests.exceptions.RequestException as error:
+            st.error("API 연결에 실패했습니다. 인증키와 네트워크를 확인해 주세요.")
+            st.caption(str(error))
+        except ET.ParseError:
+            st.error(
+                "API 응답을 XML로 해석하지 못했습니다. "
+                "인증키와 응답 내용을 확인해 주세요."
+            )
+        except ValueError as error:
+            st.error(str(error))
+        except Exception as error:
+            st.error("검색 중 오류가 발생했습니다.")
+            st.caption(str(error))
+
