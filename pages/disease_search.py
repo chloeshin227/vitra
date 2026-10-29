@@ -115,7 +115,7 @@ if hira_search_button:
         st.warning("검색할 질병명을 입력해 주세요.")
 
     else:
-        hira_api_key = get_hira_api_key()
+        hira_api_key = st.secrets["HIRA_API_KEY"]
 
         if not hira_api_key:
             st.error(
