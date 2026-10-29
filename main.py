@@ -1970,68 +1970,122 @@ if hira_search_button:
 import requests
 import xml.etree.ElementTree as ET
 
+import requests
+import xml.etree.ElementTree as ET
+import streamlit as st
 
 HIRA_DISEASE_API_URL = (
-    "https://apis.data.go.kr/B551182/"
-    "diseaseInfoService/getDissNameCodeList"
+    "https://apis.data.go.kr/"
+    "B551182/diseaseInfoService1/getDissNameCodeList1"
 )
 
 
-@st.cache_data(ttl=600, show_spinner=False)
-def search_hira_disease(search_text, api_key):
-    """HIRA API에서 질병명과 상병코드를 검색합니다."""
+def get_xml_value(element, names):
+    names = {name.lower() for name in names}
+
+    for child in element.iter():
+        tag = child.tag.split("}")[-1].lower()
+
+        if tag in names and child.text:
+            return child.text.strip()
+
+    return ""
+
+
+def search_hira_disease(search_text):
+    api_key = st.secrets.get("HIRA_API_KEY", "")
+
+    if not api_key:
+        return [], "Streamlit Secrets에서 HIRA_API_KEY를 확인해 주세요."
 
     params = {
         "ServiceKey": api_key,
-        "pageNo": "1",
-        "numOfRows": "20",
+        "pageNo": 1,
+        "numOfRows": 20,
         "sickType": "1",
         "medTp": "1",
         "diseaseType": "SICK_NM",
-        "searchText": search_text,
+        "searchText": search_text.strip(),
     }
 
-    response = requests.get(
-        HIRA_DISEASE_API_URL,
-        params=params,
-        timeout=20,
-    )
-
-    response.raise_for_status()
-    root = ET.fromstring(response.content)
-
-    def find_text(element, tag):
-        for node in element.iter():
-            if node.tag.split("}")[-1].lower() == tag.lower():
-                return (node.text or "").strip()
-        return ""
-
-    result_code = find_text(root, "resultCode")
-    result_msg = find_text(root, "resultMsg")
-
-    if result_code and result_code != "00":
-        raise ValueError(
-            f"HIRA API 오류 {result_code}: {result_msg}"
+    try:
+        response = requests.get(
+            HIRA_DISEASE_API_URL,
+            params=params,
+            timeout=15,
         )
 
-    results = []
+        if response.status_code != 200:
+            return [], (
+                f"API 요청 실패 (HTTP {response.status_code}). "
+                "요청 주소와 매개변수를 확인해 주세요."
+            )
 
-    for item in root.iter():
-        if item.tag.split("}")[-1].lower() != "item":
-            continue
+        root = ET.fromstring(response.content)
 
-        name = find_text(item, "sickNm")
-        code = find_text(item, "sickCd")
-        english = find_text(item, "sickEngNm")
+        result_code = get_xml_value(root, ["resultCode"])
+        result_message = get_xml_value(root, ["resultMsg"])
 
-        if name or code:
-            results.append({
-                "질병명": name or "정보 없음",
-                "상병코드": code or "정보 없음",
-                "영문명": english or "정보 없음",
-            })
+        if result_code and result_code not in ("00", "0000"):
+            return [], (
+                f"API 응답 오류: {result_code} - "
+                f"{result_message or '요청을 처리하지 못했습니다.'}"
+            )
 
-    return results
+        items = []
+
+        for item in root.iter():
+            if item.tag.split("}")[-1].lower() != "item":
+                continue
+
+            disease_code = get_xml_value(
+                item, ["sickCd", "SICK_CD"]
+            )
+            disease_name = get_xml_value(
+                item, ["sickNm", "SICK_NM"]
+            )
+            english_name = get_xml_value(
+                item, ["engNm", "ENG_NM", "engSickNm"]
+            )
+
+            if disease_name or disease_code:
+                items.append({
+                    "질병명": disease_name or "정보 없음",
+                    "상병코드": disease_code or "정보 없음",
+                    "영문명": english_name or "정보 없음",
+                })
+
+        if not items:
+            return [], "검색 결과가 없습니다. 검색어를 확인해 주세요."
+
+        return items, None
+
+    except requests.RequestException:
+        return [], "API 연결에 실패했습니다. 네트워크를 확인해 주세요."
+    except ET.ParseError:
+        return [], "API 응답을 XML로 읽지 못했습니다."
+
+
+# Streamlit 화면
+st.subheader("HIRA 질병정보 검색")
+
+search_text = st.text_input(
+    "질병명 입력",
+    placeholder="예: 충수염",
+    key="hira_disease_search_text",
+)
+
+if st.button("HIRA API 검색", key="hira_disease_search_button"):
+    if not search_text.strip():
+        st.warning("질병명을 입력해 주세요.")
+    else:
+        results, error = search_hira_disease(search_text)
+
+        if error:
+            st.error(error)
+        else:
+            st.success(f"{len(results)}개 결과를 찾았습니다.")
+            st.dataframe(results, use_container_width=True)
 
 
 # ---------------------------------------------------------
