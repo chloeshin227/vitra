@@ -2117,82 +2117,55 @@ if api_search_submit:
     else:
         try:
             with st.spinner("HIRA API에 연결하고 있습니다..."):
-                api_results = search_hira_disease(
+                api_results, api_error = search_hira_disease(
                     api_search_text.strip()
                 )
 
-            # API 함수가 리스트를 반환하는지 확인
-            if isinstance(api_results, dict):
-                if "items" in api_results:
-                    api_results = api_results["items"]
-                elif "response" in api_results:
-                    api_results = api_results["response"]
-                else:
-                    st.error("API 검색 결과의 데이터 형식을 확인해 주세요.")
-                    st.stop()
+            if api_error:
+                st.error(api_error)
 
-            if not isinstance(api_results, list):
-                st.error("API 검색 결과가 리스트 형식이 아닙니다.")
-                st.stop()
-
-            if not api_results:
+            elif not api_results:
                 st.info(
                     "검색 결과가 없습니다. 다른 질병명을 입력해 보세요."
                 )
+
             else:
-                st.success(
-                    f"API 검색 결과: {len(api_results)}건"
-                )
+                st.success(f"API 검색 결과: {len(api_results)}건")
 
                 for item in api_results:
-                    # 각 검색 결과가 딕셔너리인지 확인
                     if not isinstance(item, dict):
                         continue
 
-                    disease_name = item.get(
-                        "질병명",
-                        item.get("sickNm", item.get("SICK_NM", "정보 없음"))
-                    )
-                    disease_code = item.get(
-                        "상병코드",
-                        item.get("sickCd", item.get("SICK_CD", "정보 없음"))
-                    )
-                    english_name = item.get(
-                        "영문명",
-                        item.get("engNm", item.get("ENG_NM", "정보 없음"))
-                    )
+                    disease_name = item.get("질병명", "정보 없음")
+                    disease_code = item.get("상병코드", "정보 없음")
+                    english_name = item.get("영문명", "정보 없음")
 
                     with st.container(border=True):
                         st.markdown(f"**{disease_name}**")
                         st.write(f"상병코드: {disease_code}")
                         st.write(f"영문명: {english_name}")
 
-                        # 기존 VITRA 분석 데이터와 연결 여부 확인
                         if disease_name in DISEASE_DATA:
                             st.success(
                                 "VITRA 분석 지원: 기존 질환 데이터와 연결됨"
                             )
                         else:
                             st.warning(
-                                "질병명 조회 가능 · "
-                                "VITRA 분석 데이터 미등록"
+                                "질병명 조회 가능 · VITRA 분석 데이터 미등록"
                             )
 
         except KeyError:
             st.error(
-                "Streamlit Secrets에 HIRA_API_KEY를 등록해 주세요."
+                "Streamlit Secrets에서 HIRA_API_KEY를 확인해 주세요."
             )
         except requests.exceptions.RequestException:
             st.error(
                 "API 연결에 실패했습니다. 인증키와 네트워크를 확인해 주세요."
             )
         except ET.ParseError:
-            st.error(
-                "API 응답을 XML로 해석하지 못했습니다. "
-                "인증키와 응답 내용을 확인해 주세요."
-            )
+            st.error("API 응답을 XML로 해석하지 못했습니다.")
         except ValueError as error:
             st.error(str(error))
         except Exception as error:
             st.error("검색 중 오류가 발생했습니다.")
-            st.caption(f"오류 유형: {type(error).__name__}")
+            st.caption(f"오류 유형: {type(error).__name__}: {error}")
