@@ -408,6 +408,7 @@ ORGAN_POSITION = {
 def analyze_medical_info(text):
 
     text = text.strip()
+    text = text.replace(" ", "")
 
     if not text:
         return None
