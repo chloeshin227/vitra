@@ -1,11 +1,9 @@
     # 치료 과정
     # -----------------------------------------------------
 
-    st.divider()
-
-    st.header("5. 치료·수술 과정 시각화")
-
-    st.write(
+st.divider()
+st.header("5. 치료·수술 과정 시각화")
+st.write(
         "치료 또는 수술 과정을 단계별로 "
         "확인할 수 있습니다."
     )
@@ -14,7 +12,7 @@
         "surgery_steps"
     ]
 
-    st.subheader("단계 선택")
+st.subheader("단계 선택")
 
     button_columns = st.columns(
         len(steps)
@@ -39,7 +37,7 @@
         st.session_state.selected_step
     )
 
-    st.plotly_chart(
+st.plotly_chart(
         surgery_figure,
         use_container_width=True
     )
@@ -48,13 +46,13 @@
         st.session_state.selected_step - 1
     ]
 
-    st.subheader(
+st.subheader(
         f"{current_step['icon']} "
         f"{st.session_state.selected_step}단계. "
         f"{current_step['title']}"
     )
 
-    st.info(
+st.info(
         current_step["description"]
     )
 
@@ -81,16 +79,16 @@
     # 치료 후 변화
     # -----------------------------------------------------
 
-    st.divider()
+st.divider()
 
-    st.header("6. 치료 후 예상되는 변화")
+st.header("6. 치료 후 예상되는 변화")
 
-    st.write(
+st.write(
         "치료 방법과 회복 과정은 "
         "환자의 상태에 따라 달라질 수 있습니다."
     )
 
-    st.info(
+st.info(
         "치료 후에는 질환과 관련된 증상이 호전되는지 "
         "관찰하고, 수술을 받은 경우 수술 부위와 "
         "신체 기능의 회복 상태를 확인합니다."
