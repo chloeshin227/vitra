@@ -1,99 +1,83 @@
-    # 치료 과정
-    # -----------------------------------------------------
+
+# 치료 과정
+# -----------------------------------------------------
 
 st.divider()
 st.header("5. 치료·수술 과정 시각화")
 st.write(
-        "치료 또는 수술 과정을 단계별로 "
-        "확인할 수 있습니다."
-    )
+    "치료 또는 수술 과정을 단계별로 "
+    "확인할 수 있습니다."
+)
 
-    steps = information[
-        "surgery_steps"
-    ]
+steps = information["surgery_steps"]
 
 st.subheader("단계 선택")
 
-    button_columns = st.columns(
-        len(steps)
-    )
+button_columns = st.columns(len(steps))
 
-    for i, step in enumerate(steps):
+for i, step in enumerate(steps):
+    with button_columns[i]:
+        if st.button(
+            f"{step['icon']} {i + 1}단계",
+            key=f"step_{i}",
+            use_container_width=True
+        ):
+            st.session_state.selected_step = i + 1
 
-        with button_columns[i]:
-
-            if st.button(
-                f"{step['icon']} {i + 1}단계",
-                key=f"step_{i}",
-                use_container_width=True
-            ):
-
-                st.session_state.selected_step = (
-                    i + 1
-                )
-
-    surgery_figure = create_surgery_visualization(
-        result,
-        st.session_state.selected_step
-    )
+surgery_figure = create_surgery_visualization(
+    result,
+    st.session_state.selected_step
+)
 
 st.plotly_chart(
-        surgery_figure,
-        use_container_width=True
-    )
+    surgery_figure,
+    use_container_width=True
+)
 
-    current_step = steps[
-        st.session_state.selected_step - 1
-    ]
+current_step = steps[
+    st.session_state.selected_step - 1
+]
 
 st.subheader(
-        f"{current_step['icon']} "
-        f"{st.session_state.selected_step}단계. "
-        f"{current_step['title']}"
-    )
+    f"{current_step['icon']} "
+    f"{st.session_state.selected_step}단계. "
+    f"{current_step['title']}"
+)
 
-st.info(
-        current_step["description"]
-    )
+st.info(current_step["description"])
 
-    with st.expander(
-        "📋 전체 치료·수술 과정 보기"
-    ):
+with st.expander("📋 전체 치료·수술 과정 보기"):
+    for i, step in enumerate(steps):
+        st.markdown(
+            f"### {i + 1}. "
+            f"{step['icon']} "
+            f"{step['title']}"
+        )
 
-        for i, step in enumerate(steps):
+        st.write(step["description"])
 
-            st.markdown(
-                f"### {i + 1}. "
-                f"{step['icon']} "
-                f"{step['title']}"
-            )
+        if i < len(steps) - 1:
+            st.divider()
 
-            st.write(
-                step["description"]
-            )
 
-            if i < len(steps) - 1:
-                st.divider()
-
-    # -----------------------------------------------------
-    # 치료 후 변화
-    # -----------------------------------------------------
+# -----------------------------------------------------
+# 치료 후 변화
+# -----------------------------------------------------
 
 st.divider()
 
 st.header("6. 치료 후 예상되는 변화")
 
 st.write(
-        "치료 방법과 회복 과정은 "
-        "환자의 상태에 따라 달라질 수 있습니다."
-    )
+    "치료 방법과 회복 과정은 "
+    "환자의 상태에 따라 달라질 수 있습니다."
+)
 
 st.info(
-        "치료 후에는 질환과 관련된 증상이 호전되는지 "
-        "관찰하고, 수술을 받은 경우 수술 부위와 "
-        "신체 기능의 회복 상태를 확인합니다."
-    )
-
+    "치료 후에는 질환과 관련된 증상이 호전되는지 "
+    "관찰하고, 수술을 받은 경우 수술 부위와 "
+    "신체 기능의 회복 상태를 확인합니다."
+)
 
 # =========================================================
 # 지원 질환
