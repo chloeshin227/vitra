@@ -1231,12 +1231,13 @@ st.divider()
 # 사이드바
 # =========================================================
 
+
 with st.sidebar:
 
     st.header("🩺 VITRA")
 
     st.caption(
-        "Pediatric Surgery Medical Visualization"
+        "소아외과 의료정보 시각화"
     )
 
     st.write(
@@ -1249,7 +1250,13 @@ with st.sidebar:
     st.subheader("📚 정보 탐색")
 
     if st.button(
-        "💊 의약품 정보",
+        "🔎 질환 검색",
+        use_container_width=True
+    ):
+        st.switch_page("pages/disease_search.py")
+
+    if st.button(
+        "💊 의약품 검색",
         use_container_width=True
     ):
         st.switch_page("pages/medicine.py")
@@ -1284,6 +1291,7 @@ with st.sidebar:
         st.session_state.gender = "여아"
 
         st.rerun()
+
 
 
 # =========================================================
