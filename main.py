@@ -1250,6 +1250,12 @@ with st.sidebar:
     st.subheader("📚 정보 탐색")
 
     if st.button(
+        "🧍 신체 부위 시각화",
+        use_container_width=True
+    ):
+        st.switch_page("pages/body_visualization.py")
+        
+    if st.button(
         "🔎 질환 검색",
         use_container_width=True
     ):
