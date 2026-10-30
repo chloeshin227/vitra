@@ -1,6 +1,7 @@
 
 import streamlit as st
 import plotly.graph_objects as go
+from difflib import get_close_matches
 
 # =========================================================
 # 기본 설정
@@ -1358,24 +1359,44 @@ if st.button(
 
     st.session_state.medical_text = medical_text
 
-    result = analyze_medical_info(
-        medical_text
+result = analyze_medical_info(medical_text)
+
+if result is None:
+
+    st.session_state.analysis_result = None
+
+    search_text = "".join(medical_text.split())
+
+    disease_names = list(DISEASE_DATA.keys())
+
+    suggestions = get_close_matches(
+        search_text,
+        disease_names,
+        n=3,
+        cutoff=0.3
     )
 
-    if result is None:
-
-        st.session_state.analysis_result = None
-
+    if suggestions:
         st.error(
             "현재 등록된 질환 정보에서 "
             "관련 질환을 찾지 못했습니다."
         )
 
+        st.info("혹시 다음 질환을 찾으셨나요?")
+
+        for disease in suggestions:
+            st.write(f"• {disease}")
+
     else:
+        st.error(
+            "현재 등록된 질환 정보에서 "
+            "관련 질환을 찾지 못했습니다."
+        )
 
-        st.session_state.analysis_result = result
-        st.session_state.selected_step = 1
+else:
 
+    st.session_state.analysis_result = result
+    st.session_state.selected_step = 1
 
 # =========================================================
 # 결과
