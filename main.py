@@ -17,6 +17,26 @@ st.set_page_config(
 # =========================================================
 
 DISEASE_DATA = {
+    "장중첩증": {
+    "keywords": ["장중첩증", "장중첩"],
+    "organ": "장",
+    "body_part": "복부",
+    "easy_explanation": "장 일부가 다른 장 부분 안으로 말려 들어가는 상태입니다.",
+    "surgery_title": "장중첩증 치료 과정",
+    "surgery_steps": [
+        {
+            "title": "검사",
+            "description": "장중첩이 발생한 위치와 상태를 확인합니다.",
+            "icon": "🔎"
+        },
+        {
+            "title": "치료",
+            "description": "환자 상태에 따라 적절한 치료를 시행합니다.",
+            "icon": "🏥"
+        }
+    ],
+    "organ_color": "#FF9800"
+},
     "충수염": {
         "keywords": [
             "충수염",
