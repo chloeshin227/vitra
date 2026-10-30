@@ -79,21 +79,16 @@ st.info(
     "신체 기능의 회복 상태를 확인합니다."
 )
 
+
 # =========================================================
 # 지원 질환
 # =========================================================
 
 st.divider()
 
-with st.expander(
-    "📋 현재 분석 가능한 질환"
-):
-
+with st.expander("📋 현재 분석 가능한 질환"):
     for disease in DISEASE_DATA:
-
-        st.write(
-            f"• {disease}"
-        )
+        st.write(f"• {disease}")
 
 
 # =========================================================
@@ -140,3 +135,4 @@ def show_body_image():
     if gender == "남성":
         image_path = image_dir / "boybody.png"
     else:
+        image_path = image_dir / "girlbody.png"
