@@ -1237,7 +1237,7 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("📚 정보 탐색")
+    st.subheader("📚 기능 탐색")
 
     if st.button(
         "🧍 신체 부위 시각화",
