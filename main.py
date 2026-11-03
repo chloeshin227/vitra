@@ -1432,7 +1432,16 @@ if result is not None:
         "신체 기능의 회복 상태를 확인합니다."
     )
 
+if st.button(
+    "🔬 치료·수술 과정 자세히 보기",
+    use_container_width=True
+):
+    st.session_state.surgery_disease = disease
+    st.session_state.surgery_steps = information["surgery_steps"]
+    st.session_state.surgery_selected_step = 1
 
+    st.switch_page("pages/surgery_visualization.py")
+    
 # =========================================================
 # 지원 질환
 # =========================================================
