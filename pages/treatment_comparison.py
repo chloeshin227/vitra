@@ -1,5 +1,6 @@
 
 import streamlit as st
+import pandas as pd
 
 
 # =========================================================
@@ -14,8 +15,41 @@ st.set_page_config(
 
 
 # =========================================================
+# 질환 목록: main.py의 25개 질환과 동일하게 관리
+# =========================================================
+
+DISEASE_LIST = [
+    "장중첩증",
+    "충수염",
+    "장폐색",
+    "장회전이상",
+    "탈장",
+    "담낭염",
+    "복막염",
+    "담석증",
+    "췌장염",
+    "장천공",
+    "비후성 유문협착증",
+    "히르슈스프룽병",
+    "메켈게실",
+    "괴사성 장염",
+    "담도폐쇄증",
+    "총담관낭종",
+    "선천성 횡격막 탈장",
+    "복벽갈림증",
+    "배꼽류",
+    "항문직장기형",
+    "선천성 식도폐쇄증",
+    "잠복고환",
+    "요도하열",
+    "고환 염전",
+    "난소 염전"
+]
+
+
+# =========================================================
 # 치료 방법 비교 데이터
-# 교육용 예시이며 실제 치료 결정 기준이 아님
+# 상세 내용이 확인된 질환만 등록
 # =========================================================
 
 TREATMENT_DATA = {
@@ -31,7 +65,7 @@ TREATMENT_DATA = {
                 "features": [
                     "수술 없이 치료를 시도할 수 있습니다.",
                     "영상 장비를 이용하여 치료 과정을 확인합니다.",
-                    "모든 환자에게 적용할 수 있는 것은 아닙니다."
+                    "환자의 상태에 따라 적용 여부가 달라집니다."
                 ],
                 "limitations": [
                     "장 천공 등 합병증 위험을 고려해야 합니다.",
@@ -65,7 +99,7 @@ TREATMENT_DATA = {
                 "purpose": "세균 감염과 염증을 조절하는 것",
                 "method": "의료진의 판단에 따라 항생제를 투여하고 상태를 관찰합니다.",
                 "features": [
-                    "수술을 피할 수 있는 경우가 있습니다.",
+                    "일부 환자에서 수술 없이 치료를 시도할 수 있습니다.",
                     "환자 상태를 지속적으로 관찰해야 합니다."
                 ],
                 "limitations": [
@@ -133,7 +167,7 @@ TREATMENT_DATA = {
                 "purpose": "탈장의 상태와 합병증 발생 여부를 확인하는 것",
                 "method": "탈장의 종류와 환자의 연령 및 상태에 따라 의료진이 경과를 관찰합니다.",
                 "features": [
-                    "일부 소아 탈장은 자연적으로 닫힐 수 있습니다.",
+                    "일부 소아 배꼽탈장은 자연적으로 닫힐 수 있습니다.",
                     "상태 변화와 합병증 여부를 관찰합니다."
                 ],
                 "limitations": [
@@ -167,169 +201,238 @@ TREATMENT_DATA = {
 st.title("⚖️ 치료 방법 비교")
 
 st.write(
-    "질환별 비수술적 치료와 수술적 치료의 목적, "
-    "방법 및 특징을 비교할 수 있습니다."
+    "소아외과 관련 질환의 치료 방법을 비교하고 "
+    "치료 목적과 특징을 살펴볼 수 있습니다."
 )
 
 st.info(
-    "이 페이지는 의료정보 교육을 위한 자료입니다. "
-    "실제 치료 방법은 환자의 상태와 전문 의료진의 판단에 따라 달라집니다."
+    "본 페이지는 의료정보 교육용 자료입니다. "
+    "실제 치료 방법과 적용 여부는 환자의 상태 및 "
+    "전문 의료진의 판단에 따라 달라집니다."
 )
 
 
 # =========================================================
-# 질환 선택
+# 탭 구성
 # =========================================================
 
-st.subheader("1. 비교할 질환 선택")
-
-disease = st.selectbox(
-    "질환을 선택하세요.",
-    list(TREATMENT_DATA.keys())
-)
-
-data = TREATMENT_DATA[disease]
-
-st.markdown(f"### 🩺 {disease}")
-
-st.write(data["summary"])
+tab1, tab2 = st.tabs([
+    "질환별 치료 비교",
+    "두 질환 비교"
+])
 
 
 # =========================================================
-# 치료 방법 비교
+# 탭 1: 질환별 치료 비교
 # =========================================================
 
-st.divider()
+with tab1:
 
-st.subheader("2. 치료 방법 비교")
+    st.subheader("1. 질환 선택")
 
-method1, method2 = data["methods"]
-
-col1, col2 = st.columns(2)
-
-with col1:
-
-    st.markdown(
-        f"### 🔵 {method1['category']}"
+    disease = st.selectbox(
+        "비교할 질환을 선택하세요.",
+        DISEASE_LIST,
+        key="single_disease"
     )
 
-    st.markdown(
-        f"#### {method1['name']}"
-    )
+    st.markdown(f"### 🩺 {disease}")
 
-    st.markdown("**치료 목적**")
+    if disease not in TREATMENT_DATA:
 
-    st.write(method1["purpose"])
+        st.warning(
+            "현재 이 질환의 상세 치료 비교 자료는 "
+            "아직 등록되지 않았습니다."
+        )
 
-    st.markdown("**치료 방법**")
+        st.write(
+            "해당 질환의 치료 방법, 적용 조건 및 "
+            "주의사항을 의학적 근거에 따라 검증한 후 "
+            "비교 자료에 추가할 예정입니다."
+        )
 
-    st.write(method1["method"])
+        st.caption(
+            "질환 선택과 데이터베이스 등록은 완료되었으며, "
+            "상세 치료 비교 정보는 준비 중입니다."
+        )
 
-    st.markdown("**주요 특징**")
+    else:
 
-    for feature in method1["features"]:
-        st.markdown(f"- {feature}")
+        data = TREATMENT_DATA[disease]
 
-    st.markdown("**고려할 점**")
+        st.write(data["summary"])
 
-    for limitation in method1["limitations"]:
-        st.markdown(f"- {limitation}")
+        st.divider()
 
+        st.subheader("2. 치료 방법 비교")
 
-with col2:
+        methods = data["methods"]
 
-    st.markdown(
-        f"### 🟠 {method2['category']}"
-    )
+        columns = st.columns(
+            min(len(methods), 2)
+        )
 
-    st.markdown(
-        f"#### {method2['name']}"
-    )
+        for index, method in enumerate(methods):
 
-    st.markdown("**치료 목적**")
+            with columns[index % 2]:
 
-    st.write(method2["purpose"])
+                st.markdown(
+                    f"### {method['category']}"
+                )
 
-    st.markdown("**치료 방법**")
+                st.markdown(
+                    f"#### {method['name']}"
+                )
 
-    st.write(method2["method"])
+                st.markdown("**치료 목적**")
+                st.write(method["purpose"])
 
-    st.markdown("**주요 특징**")
+                st.markdown("**치료 방법**")
+                st.write(method["method"])
 
-    for feature in method2["features"]:
-        st.markdown(f"- {feature}")
+                st.markdown("**주요 특징**")
 
-    st.markdown("**고려할 점**")
+                for feature in method["features"]:
+                    st.markdown(f"- {feature}")
 
-    for limitation in method2["limitations"]:
-        st.markdown(f"- {limitation}")
+                st.markdown("**고려할 점**")
+
+                for limitation in method["limitations"]:
+                    st.markdown(f"- {limitation}")
+
+        st.divider()
+
+        st.subheader("3. 핵심 비교표")
+
+        comparison_rows = []
+
+        for method in methods:
+
+            comparison_rows.append({
+                "치료 방법": method["name"],
+                "치료 유형": method["category"],
+                "치료 목적": method["purpose"],
+                "주요 특징": " / ".join(method["features"]),
+                "고려할 점": " / ".join(method["limitations"])
+            })
+
+        st.dataframe(
+            pd.DataFrame(comparison_rows),
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.divider()
+
+        st.subheader("4. 치료 방법 상세 설명")
+
+        selected_method = st.selectbox(
+            "자세히 알아볼 치료 방법을 선택하세요.",
+            [method["name"] for method in methods],
+            key="detail_method"
+        )
+
+        selected_data = next(
+            method for method in methods
+            if method["name"] == selected_method
+        )
+
+        st.markdown(
+            f"### {selected_data['name']}"
+        )
+
+        st.write(selected_data["method"])
+
+        with st.expander("주요 특징"):
+            for feature in selected_data["features"]:
+                st.write(f"• {feature}")
+
+        with st.expander("치료 시 고려할 점"):
+            for limitation in selected_data["limitations"]:
+                st.write(f"• {limitation}")
 
 
 # =========================================================
-# 비교 요약
+# 탭 2: 두 질환 비교
 # =========================================================
 
-st.divider()
+with tab2:
 
-st.subheader("3. 핵심 비교")
+    st.subheader("두 질환 비교")
 
-comparison = {
-    "비교 항목": [
-        "치료 목적",
-        "치료 방식",
-        "침습성",
-        "주요 고려사항"
-    ],
-    method1["name"]: [
-        method1["purpose"],
-        method1["method"],
-        "비수술적 접근",
-        ", ".join(method1["limitations"])
-    ],
-    method2["name"]: [
-        method2["purpose"],
-        method2["method"],
-        "수술적 접근",
-        ", ".join(method2["limitations"])
-    ]
-}
+    col1, col2 = st.columns(2)
 
-st.dataframe(
-    comparison,
-    use_container_width=True,
-    hide_index=True
-)
+    with col1:
 
+        disease1 = st.selectbox(
+            "첫 번째 질환",
+            DISEASE_LIST,
+            key="compare_disease1"
+        )
 
-# =========================================================
-# 치료 방법 상세 설명
-# =========================================================
+    with col2:
 
-st.divider()
+        disease2 = st.selectbox(
+            "두 번째 질환",
+            DISEASE_LIST,
+            index=1,
+            key="compare_disease2"
+        )
 
-st.subheader("4. 치료 방법 자세히 살펴보기")
+    if disease1 == disease2:
 
-selected_method = st.selectbox(
-    "자세히 알아볼 치료 방법을 선택하세요.",
-    [method1["name"], method2["name"]]
-)
+        st.warning("서로 다른 두 질환을 선택해 주세요.")
 
-selected_data = next(
-    method for method in data["methods"]
-    if method["name"] == selected_method
-)
+    else:
 
-st.markdown(f"### {selected_data['name']}")
+        st.markdown("### 비교 결과")
 
-st.write(selected_data["method"])
+        comparison_data = []
 
-with st.expander("치료의 주요 특징"):
-    for feature in selected_data["features"]:
-        st.write(f"• {feature}")
+        for disease_name in [disease1, disease2]:
 
-with st.expander("치료 시 고려할 점"):
-    for limitation in selected_data["limitations"]:
-        st.write(f"• {limitation}")
+            if disease_name in TREATMENT_DATA:
+
+                disease_info = TREATMENT_DATA[disease_name]
+
+                treatment_names = ", ".join(
+                    method["name"]
+                    for method in disease_info["methods"]
+                )
+
+                categories = ", ".join(
+                    method["category"]
+                    for method in disease_info["methods"]
+                )
+
+                comparison_data.append({
+                    "비교 항목": disease_name,
+                    "질환 설명": disease_info["summary"],
+                    "등록된 치료 방법": treatment_names,
+                    "치료 유형": categories,
+                    "자료 상태": "상세 정보 등록"
+                })
+
+            else:
+
+                comparison_data.append({
+                    "비교 항목": disease_name,
+                    "질환 설명": "상세 비교 자료 준비 중",
+                    "등록된 치료 방법": "자료 준비 중",
+                    "치료 유형": "자료 준비 중",
+                    "자료 상태": "상세 정보 미등록"
+                })
+
+        st.dataframe(
+            pd.DataFrame(comparison_data),
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.caption(
+            "두 질환의 치료 방법을 비교하려면 "
+            "각 질환의 상세 치료 데이터가 등록되어 있어야 합니다."
+        )
 
 
 # =========================================================
@@ -342,4 +445,3 @@ st.caption(
     "VITRA | 의료정보 시각화 교육용 플랫폼 · "
     "본 자료는 진단이나 치료 결정을 대신하지 않습니다."
 )
-
