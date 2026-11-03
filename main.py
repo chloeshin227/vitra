@@ -1046,7 +1046,7 @@ with feature1:
     key="treatment_comparison_button",
     use_container_width=True
 ):
-    st.switch_page("pages/treatment_comparison.py")")
+        st.switch_page("pages/treatment_comparison.py")")
 
 
 with feature2:
