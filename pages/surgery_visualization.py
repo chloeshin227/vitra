@@ -4,6 +4,85 @@
 import streamlit as st
 import plotly.graph_objects as go
 
+
+# =========================================================
+# 수술 과정 페이지 화면
+# =========================================================
+
+st.set_page_config(
+    page_title="치료·수술 과정 | VITRA",
+    page_icon="🔬",
+    layout="wide"
+)
+
+if "surgery_steps" not in st.session_state:
+    st.warning("먼저 질환 검색에서 질환을 분석해 주세요.")
+    st.stop()
+
+steps = st.session_state.surgery_steps
+disease = st.session_state.surgery_disease
+
+st.title("🔬 치료 · 수술 과정 시각화")
+
+st.subheader(disease)
+
+st.write(
+    "선택한 질환의 치료 및 수술 과정을 단계별로 확인할 수 있습니다."
+)
+
+if "surgery_selected_step" not in st.session_state:
+    st.session_state.surgery_selected_step = 1
+
+# 단계 선택 버튼
+button_columns = st.columns(len(steps))
+
+for i, step in enumerate(steps):
+
+    with button_columns[i]:
+
+        if st.button(
+            f"{step['icon']} {i + 1}단계",
+            key=f"surgery_step_{i}",
+            use_container_width=True
+        ):
+            st.session_state.surgery_selected_step = i + 1
+
+# 그래프 표시
+selected_step = st.session_state.surgery_selected_step
+
+fig = create_surgery_visualization(
+    steps,
+    selected_step
+)
+
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
+
+# 선택 단계 설명
+current_step = steps[selected_step - 1]
+
+st.subheader(
+    f"{selected_step}단계. {current_step['title']}"
+)
+
+st.info(current_step["description"])
+
+# 전체 과정
+with st.expander("📋 전체 치료·수술 과정 보기"):
+
+    for i, step in enumerate(steps):
+
+        st.markdown(
+            f"### {i + 1}. {step['icon']} {step['title']}"
+        )
+
+        st.write(step["description"])
+
+        if i < len(steps) - 1:
+            st.divider()
+            
 def create_surgery_visualization(steps, selected_step):
 
     disease = result["disease"]
@@ -141,80 +220,4 @@ def create_surgery_visualization(steps, selected_step):
     )
 
     return fig
-# =========================================================
-# 수술 과정 페이지 화면
-# =========================================================
 
-st.set_page_config(
-    page_title="치료·수술 과정 | VITRA",
-    page_icon="🔬",
-    layout="wide"
-)
-
-if "surgery_steps" not in st.session_state:
-    st.warning("먼저 질환 검색에서 질환을 분석해 주세요.")
-    st.stop()
-
-steps = st.session_state.surgery_steps
-disease = st.session_state.surgery_disease
-
-st.title("🔬 치료 · 수술 과정 시각화")
-
-st.subheader(disease)
-
-st.write(
-    "선택한 질환의 치료 및 수술 과정을 단계별로 확인할 수 있습니다."
-)
-
-if "surgery_selected_step" not in st.session_state:
-    st.session_state.surgery_selected_step = 1
-
-# 단계 선택 버튼
-button_columns = st.columns(len(steps))
-
-for i, step in enumerate(steps):
-
-    with button_columns[i]:
-
-        if st.button(
-            f"{step['icon']} {i + 1}단계",
-            key=f"surgery_step_{i}",
-            use_container_width=True
-        ):
-            st.session_state.surgery_selected_step = i + 1
-
-# 그래프 표시
-selected_step = st.session_state.surgery_selected_step
-
-fig = create_surgery_visualization(
-    steps,
-    selected_step
-)
-
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
-
-# 선택 단계 설명
-current_step = steps[selected_step - 1]
-
-st.subheader(
-    f"{selected_step}단계. {current_step['title']}"
-)
-
-st.info(current_step["description"])
-
-# 전체 과정
-with st.expander("📋 전체 치료·수술 과정 보기"):
-
-    for i, step in enumerate(steps):
-
-        st.markdown(
-            f"### {i + 1}. {step['icon']} {step['title']}"
-        )
-
-        st.write(step["description"])
-
-        if i < len(steps) - 1:
-            st.divider()
