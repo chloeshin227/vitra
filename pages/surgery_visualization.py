@@ -1,6 +1,8 @@
 # =========================================================
 # 치료/수술 과정 시각화
 # =========================================================
+import streamlit as st
+import plotly.graph_objects as go
 
 def create_surgery_visualization(steps, selected_step):
 
