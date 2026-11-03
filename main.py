@@ -1012,23 +1012,62 @@ st.markdown("""
 # 주요 기능 카드
 # =========================================================
 
+
+# =========================================================
+# VITRA 주요 기능 안내
+# =========================================================
+
 st.markdown("### VITRA에서 할 수 있는 것")
 
-feature1, feature2, feature3 = st.columns(3)
+# 첫 번째 행
+feature1, feature2 = st.columns(2)
 
 with feature1:
     st.markdown("""
     <div class="feature-card">
         <div class="feature-icon">🩺</div>
-        <div class="feature-title">질환 · 해부학 탐색</div>
+        <div class="feature-title">질환 검색</div>
         <div class="feature-text">
-            질환명을 입력하면 관련 장기와 해부학적 위치를
+            질환명을 입력하여 관련 질환 정보를 검색하고
+            주요 증상과 특징을 확인할 수 있습니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button(
+        "🩺 질환 검색하기",
+        key="disease_search_button",
+        use_container_width=True
+    ):
+        st.switch_page("pages/disease_search.py")
+
+
+with feature2:
+    st.markdown("""
+    <div class="feature-card">
+        <div class="feature-icon">🫀</div>
+        <div class="feature-title">신체 부위 시각화</div>
+        <div class="feature-text">
+            인체의 주요 장기와 해부학적 위치를
             시각적으로 확인할 수 있습니다.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-with feature2:
+    if st.button(
+        "🫀 신체 부위 탐색하기",
+        key="body_visualization_button",
+        use_container_width=True
+    ):
+        st.switch_page("pages/body_visualization.py")
+
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# 두 번째 행
+feature3, feature4 = st.columns(2)
+
+with feature3:
     st.markdown("""
     <div class="feature-card">
         <div class="feature-icon">🔬</div>
@@ -1040,7 +1079,15 @@ with feature2:
     </div>
     """, unsafe_allow_html=True)
 
-with feature3:
+    if st.button(
+        "🔬 치료·수술 과정 살펴보기",
+        key="surgery_visualization_button",
+        use_container_width=True
+    ):
+        st.switch_page("pages/surgery_visualization.py")
+
+
+with feature4:
     st.markdown("""
     <div class="feature-card">
         <div class="feature-icon">💊</div>
@@ -1052,17 +1099,13 @@ with feature3:
     </div>
     """, unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
+    if st.button(
+        "💊 의약품 정보 탐색하기",
+        key="medicine_button",
+        use_container_width=True
+    ):
+        st.switch_page("pages/medicine.py")
 
-# =========================================================
-# 의약품 정보 바로가기
-# =========================================================
-
-if st.button(
-    "💊 의약품 정보 탐색하기",
-    use_container_width=True
-):
-    st.switch_page("pages/medicine.py")
 
 st.divider()
 
