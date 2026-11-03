@@ -1209,21 +1209,11 @@ st.markdown("<br>", unsafe_allow_html=True)
 # 의약품 정보 바로가기
 # =========================================================
 
-medicine_col1, medicine_col2 = st.columns([3, 1])
-
-with medicine_col1:
-    st.info(
-        "💊 의약품 정보 탐색 기능이 추가되었습니다.\n\n"
-        "의약품명 또는 성분명을 검색하여 의약품의 기본 정보와 "
-        "주의사항, 상호작용 등의 정보를 확인할 수 있습니다."
-    )
-
-with medicine_col2:
-    if st.button(
-        "💊 의약품 정보\n탐색하기",
-        use_container_width=True
-    ):
-        st.switch_page("pages/medicine.py")
+if st.button(
+    "💊 의약품 정보 탐색하기",
+    use_container_width=True
+):
+    st.switch_page("pages/medicine.py")
 
 st.divider()
 
