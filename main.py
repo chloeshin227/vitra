@@ -1040,6 +1040,13 @@ with feature1:
         use_container_width=True
     ):
         st.switch_page("pages/disease_search.py")
+        
+    if st.button(
+    "⚖️ 치료 방법 비교하기",
+    key="treatment_comparison_button",
+    use_container_width=True
+):
+    st.switch_page("pages/treatment_comparison.py")
 
 
 with feature2:
