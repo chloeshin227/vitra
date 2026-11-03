@@ -1437,9 +1437,7 @@ if st.button(
     use_container_width=True
 ):
     st.session_state.surgery_disease = disease
-    st.session_state.surgery_steps = information["surgery_steps"]
-    st.session_state.surgery_selected_step = 1
-
+    st.session_state.surgery_steps = DISEASE_DATA[disease]["surgery_steps"]
     st.switch_page("pages/surgery_visualization.py")
     
 # =========================================================
