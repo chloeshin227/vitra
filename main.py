@@ -1019,10 +1019,15 @@ st.markdown("""
 
 st.markdown("### VITRA에서 할 수 있는 것")
 
-# 첫 번째 행
+# =========================================================
+# 첫 번째 행: 질환 검색 / 신체 부위 시각화
+# =========================================================
+
 feature1, feature2 = st.columns(2)
 
+# 질환 검색
 with feature1:
+
     st.markdown("""
     <div class="feature-card">
         <div class="feature-icon">🩺</div>
@@ -1040,16 +1045,18 @@ with feature1:
         use_container_width=True
     ):
         st.switch_page("pages/disease_search.py")
-        
-   if st.button(
+
+    if st.button(
         "⚖️ 치료 방법 비교하기",
-    key="treatment_comparison_button",
-    use_container_width=True
-):
-        st.switch_page("pages/treatment_comparison.py")")
+        key="treatment_comparison_button",
+        use_container_width=True
+    ):
+        st.switch_page("pages/treatment_comparison.py")
 
 
+# 신체 부위 시각화
 with feature2:
+
     st.markdown("""
     <div class="feature-card">
         <div class="feature-icon">🫀</div>
@@ -1070,7 +1077,6 @@ with feature2:
 
 
 st.markdown("<br>", unsafe_allow_html=True)
-
 # 두 번째 행
 feature3, feature4 = st.columns(2)
 
