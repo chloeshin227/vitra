@@ -1612,10 +1612,23 @@ if result is not None:
 # 지원 질환
 # =========================================================
 
+# =========================================================
+# 지원 질환 목록
+# =========================================================
+
 st.divider()
 
-with st.expander("📋 현재 분석 가능한 질환"):
+disease_count = len(DISEASE_DATA)
 
-    for disease_name in DISEASE_DATA:
+with st.expander(
+    f"📋 현재 분석 가능한 질환 ({disease_count}개)"
+):
+    st.caption(
+        "VITRA에서 관련 의료정보를 확인할 수 있는 질환 목록입니다."
+    )
 
-        st.write(f"• {disease_name}")
+    columns = st.columns(3)
+
+    for index, disease_name in enumerate(DISEASE_DATA):
+        with columns[index % 3]:
+            st.markdown(f"• {disease_name}")
