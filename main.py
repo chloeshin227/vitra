@@ -1027,7 +1027,101 @@ def create_body_visualization(result, gender):
                 width=5
             )
         )
+    # -----------------------------------------------------
+    # 식도
+    # -----------------------------------------------------
 
+    elif organ == "식도":
+
+        fig.add_trace(
+            go.Scatter(
+                x=[0.05, 0.05, 0.05, 0.10],
+                y=[4.65, 4.25, 3.85, 3.55],
+                mode="lines",
+                line=dict(
+                    width=16,
+                    color=organ_color
+                ),
+                hoverinfo="skip",
+                showlegend=False
+            )
+        )
+
+    # -----------------------------------------------------
+    # 횡격막
+    # -----------------------------------------------------
+
+    elif organ == "횡격막":
+
+        fig.add_trace(
+            go.Scatter(
+                x=[
+                    -0.45, -0.30, -0.15,
+                    0.00, 0.15, 0.30, 0.45
+                ],
+                y=[
+                    3.75, 3.85, 3.92,
+                    3.95, 3.92, 3.85, 3.75
+                ],
+                mode="lines",
+                line=dict(
+                    width=18,
+                    color=organ_color,
+                    shape="spline"
+                ),
+                hoverinfo="skip",
+                showlegend=False
+            )
+        )
+
+    # -----------------------------------------------------
+    # 요로
+    # -----------------------------------------------------
+
+    elif organ == "요로":
+
+        # 좌우 요관
+        fig.add_trace(
+            go.Scatter(
+                x=[-0.22, -0.16, -0.08],
+                y=[3.15, 2.75, 2.30],
+                mode="lines",
+                line=dict(
+                    width=12,
+                    color=organ_color
+                ),
+                hoverinfo="skip",
+                showlegend=False
+            )
+        )
+
+        fig.add_trace(
+            go.Scatter(
+                x=[0.22, 0.16, 0.08],
+                y=[3.15, 2.75, 2.30],
+                mode="lines",
+                line=dict(
+                    width=12,
+                    color=organ_color
+                ),
+                hoverinfo="skip",
+                showlegend=False
+            )
+        )
+
+        # 방광
+        fig.add_shape(
+            type="circle",
+            x0=-0.17,
+            x1=0.17,
+            y0=2.05,
+            y1=2.35,
+            fillcolor=organ_color,
+            line=dict(
+                color="white",
+                width=2
+            )
+        )
     # =====================================================
     # 질환 부위 강조
     # =====================================================
