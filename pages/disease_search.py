@@ -48,11 +48,11 @@ def normalize_search_text(search_text):
 # HIRA 질병정보 검색
 # =========================================================
 @st.cache_data(ttl=CACHE_TTL, show_spinner=False)
-def fetch_hira_response(search_text, api_key):
+def fetch_hira_response(search_text, api_key, page_no):
 
     params = {
         "ServiceKey": api_key,
-        "pageNo": "1",
+        "pageNo": str(page_no),
         "numOfRows": "20",
         "sickType": "1",
         "medTp": "1",
@@ -71,7 +71,7 @@ def fetch_hira_response(search_text, api_key):
     return response.content
 
 
-def search_hira_disease(search_text):
+def search_hira_disease(search_text, page_no=1):
 
     api_key = st.secrets.get("HIRA_API_KEY", "")
 
@@ -80,7 +80,11 @@ def search_hira_disease(search_text):
 
     try:
 
-        content = fetch_hira_response(search_text, api_key)
+        content = fetch_hira_response(
+            search_text,
+            api_key,
+            page_no
+        )
         root = ET.fromstring(content)
 
         result_code = get_xml_value(
@@ -180,6 +184,14 @@ with st.form("hira_disease_search_form"):
         max_chars=MAX_SEARCH_LENGTH,
     )
 
+    page_no = st.number_input(
+        "검색 페이지",
+        min_value=1,
+        max_value=100,
+        value=1,
+        step=1,
+    )
+
     search_button = st.form_submit_button(
         "공공 질병정보 검색",
         use_container_width=True,
@@ -220,9 +232,9 @@ if search_button:
         with st.spinner("질병정보를 검색하고 있습니다..."):
 
             results, error_message = search_hira_disease(
-                normalized_text
+                normalized_text,
+                int(page_no)
             )
-
         if error_message:
 
             st.error(error_message)
