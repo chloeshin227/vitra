@@ -1243,6 +1243,35 @@ st.markdown("""
     line-height: 1.55;
     color: #667784;
 }
+/* 주요 기능 카드 크기 통일 */
+.feature-card {
+    height: 240px !important;
+    min-height: 240px !important;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    overflow: hidden;
+}
+
+.feature-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+.feature-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.feature-text {
+    font-size: 16px;
+    line-height: 1.7;
+    flex-grow: 1;
+}
 </style>
 """, unsafe_allow_html=True)
 
