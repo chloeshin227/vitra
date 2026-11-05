@@ -692,9 +692,16 @@ def create_body_visualization(result, gender):
     else:
         x, y = 0, 0
 
-    organ_color = DISEASE_DATA[
-        result["disease"]
-    ]["organ_color"]
+    # 질환 데이터 및 장기 색상 확인
+    disease_info = DISEASE_DATA.get(
+        result.get("disease"),
+        {}
+    )
+
+    organ_color = disease_info.get(
+        "organ_color",
+        "#FF7043"
+    )
 
     # -----------------------------------------------------
     # 머리
