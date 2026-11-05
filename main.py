@@ -614,17 +614,23 @@ ORGAN_POSITION = {
     "복벽": (0.00, 2.85),
     "요로": (0.00, 2.25),
 }
-
 # =========================================================
 # 질환 분석
 # =========================================================
 
 def analyze_medical_info(text):
 
-    text = text.strip()
-    text = text.replace(" ", "")
+    if not isinstance(text, str):
+        return None
 
-    if not text:
+    # 공백과 문장부호 제거 및 영문 소문자 변환
+    normalized_text = "".join(
+        char.casefold()
+        for char in text
+        if char.isalnum()
+    )
+
+    if not normalized_text:
         return None
 
     keywords = []
@@ -633,14 +639,21 @@ def analyze_medical_info(text):
 
         for keyword in info["keywords"]:
 
-            keywords.append(
-                (
-                    len(keyword),
-                    keyword,
-                    disease,
-                    info
-                )
+            normalized_keyword = "".join(
+                char.casefold()
+                for char in keyword
+                if char.isalnum()
             )
+
+            if normalized_keyword:
+                keywords.append(
+                    (
+                        len(normalized_keyword),
+                        normalized_keyword,
+                        disease,
+                        info
+                    )
+                )
 
     # 긴 키워드부터 검색
     keywords.sort(
@@ -650,7 +663,7 @@ def analyze_medical_info(text):
 
     for _, keyword, disease, info in keywords:
 
-        if keyword in text:
+        if keyword in normalized_text:
 
             return {
                 "disease": disease,
@@ -659,7 +672,6 @@ def analyze_medical_info(text):
             }
 
     return None
-
 
 # =========================================================
 # 인체 시각화
