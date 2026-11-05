@@ -115,10 +115,6 @@ def search_hira_disease(search_text):
                 element, ["sickCd", "SICK_CD"]
             )
 
-            english_name = get_xml_value(
-                element, ["engNm", "ENG_NM", "engSickNm"]
-            )
-
             if not disease_name and not disease_code:
                 continue
 
@@ -135,7 +131,6 @@ def search_hira_disease(search_text):
             items.append({
                 "질병명": disease_name or "정보 없음",
                 "상병코드": disease_code or "정보 없음",
-                "영문명": english_name or "정보 없음",
             })
 
         if not items:
@@ -260,21 +255,15 @@ if "hira_search_results" in st.session_state:
 
     for index, disease in enumerate(results, start=1):
 
-        with st.container(border=True):
+    with st.container(border=True):
 
-            st.markdown(
-                f"**{index}. {disease['질병명']}**"
-            )
+        st.markdown(
+            f"**{index}. {disease['질병명']}**"
+        )
 
-            col1, col2 = st.columns(2)
+        st.caption("상병코드")
 
-            with col1:
-                st.caption("상병코드")
-                st.code(disease["상병코드"])
-
-            with col2:
-                st.caption("영문명")
-                st.write(disease["영문명"])
+        st.code(disease["상병코드"])
 
         # =====================================================
     # 검색 결과 CSV 다운로드
@@ -284,7 +273,7 @@ if "hira_search_results" in st.session_state:
 
     writer = csv.DictWriter(
         csv_buffer,
-        fieldnames=["질병명", "상병코드", "영문명"]
+        fieldnames=["질병명", "상병코드"]
     )
 
     writer.writeheader()
