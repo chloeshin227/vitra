@@ -1435,16 +1435,16 @@ with st.sidebar:
     st.divider()
 
     if st.button(
-    "🔄 새로운 환자 입력",
-    use_container_width=True
-):
-    st.session_state.medical_text = ""
-    st.session_state.medical_text_input = ""
-    st.session_state.analysis_result = None
-    st.session_state.selected_step = 1
-    st.session_state.gender = "여아"
+        "🔄 새로운 환자 입력",
+        use_container_width=True
+    ):
+        st.session_state.medical_text = ""
+        st.session_state.medical_text_input = ""
+        st.session_state.analysis_result = None
+        st.session_state.selected_step = 1
+        st.session_state.gender = "여아"
 
-    st.rerun()
+        st.rerun()
 
 # =========================================================
 # 환자 정보 표시
