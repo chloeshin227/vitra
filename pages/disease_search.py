@@ -13,12 +13,20 @@ HIRA_DISEASE_API_URL = (
     "B551182/diseaseInfoService1/getDissNameCodeList1"
 )
 
+CACHE_TTL = 300
+MAX_SEARCH_LENGTH = 50
+
+
+# =========================================================
+# XML 데이터 처리
+# =========================================================
 
 def get_xml_value(element, names):
-    """XML에서 지정한 태그의 값을 가져옵니다."""
+
     names = {name.lower() for name in names}
 
     for child in element.iter():
+
         tag = child.tag.split("}")[-1].lower()
 
         if tag in names and child.text:
@@ -27,12 +35,20 @@ def get_xml_value(element, names):
     return ""
 
 
+def normalize_search_text(search_text):
+
+    if not isinstance(search_text, str):
+        return ""
+
+    return " ".join(search_text.split())
+
+
+# =========================================================
+# HIRA 질병정보 검색
+# =========================================================
+
+@st.cache_data(ttl=CACHE_TTL, show_spinner=False)
 def search_hira_disease(search_text):
-    """
-    검색 결과와 오류 메시지를 반환합니다.
-    성공: (검색 결과 리스트, None)
-    실패: (빈 리스트, 오류 메시지)
-    """
 
     api_key = st.secrets.get("HIRA_API_KEY", "")
 
@@ -49,10 +65,11 @@ def search_hira_disease(search_text):
         "sickType": "1",
         "medTp": "1",
         "diseaseType": "SICK_NM",
-        "searchText": search_text.strip(),
+        "searchText": search_text,
     }
 
     try:
+
         response = requests.get(
             HIRA_DISEASE_API_URL,
             params=params,
@@ -60,6 +77,7 @@ def search_hira_disease(search_text):
         )
 
         if response.status_code != 200:
+
             return [], (
                 f"API 요청 실패 (HTTP {response.status_code}). "
                 "API 주소와 요청 매개변수를 확인해 주세요."
@@ -68,13 +86,17 @@ def search_hira_disease(search_text):
         root = ET.fromstring(response.content)
 
         result_code = get_xml_value(
-            root, ["resultCode", "RESULTCODE"]
+            root,
+            ["resultCode", "RESULTCODE"]
         )
+
         result_message = get_xml_value(
-            root, ["resultMsg", "RESULTMSG"]
+            root,
+            ["resultMsg", "RESULTMSG"]
         )
 
         if result_code and result_code not in ("00", "0000"):
+
             return [], (
                 f"API 응답 오류: {result_code} - "
                 f"{result_message or '요청 실패'}"
@@ -84,23 +106,34 @@ def search_hira_disease(search_text):
         seen = set()
 
         for element in root.iter():
-            if element.tag.split("}")[-1].lower() != "item":
+
+            tag = element.tag.split("}")[-1].lower()
+
+            if tag != "item":
                 continue
 
             disease_name = get_xml_value(
-                element, ["sickNm", "SICK_NM"]
+                element,
+                ["sickNm", "SICK_NM"]
             )
+
             disease_code = get_xml_value(
-                element, ["sickCd", "SICK_CD"]
+                element,
+                ["sickCd", "SICK_CD"]
             )
+
             english_name = get_xml_value(
-                element, ["engNm", "ENG_NM", "engSickNm"]
+                element,
+                ["engNm", "ENG_NM", "engSickNm"]
             )
 
             if not disease_name and not disease_code:
                 continue
 
-            identity = (disease_name, disease_code)
+            identity = (
+                disease_name.casefold(),
+                disease_code.casefold()
+            )
 
             if identity in seen:
                 continue
@@ -114,30 +147,45 @@ def search_hira_disease(search_text):
             })
 
         if not items:
+
             return [], (
-                "검색 결과가 없습니다. 다른 질병명을 입력해 보세요."
+                "검색 결과가 없습니다. "
+                "다른 질병명을 입력해 보세요."
             )
 
         return items, None
 
     except requests.exceptions.Timeout:
-        return [], "API 응답 시간이 초과되었습니다. 다시 시도해 주세요."
+
+        return [], (
+            "API 응답 시간이 초과되었습니다. "
+            "잠시 후 다시 시도해 주세요."
+        )
+
+    except requests.exceptions.ConnectionError:
+
+        return [], (
+            "API 서버에 연결할 수 없습니다. "
+            "네트워크 상태를 확인해 주세요."
+        )
 
     except requests.exceptions.RequestException:
+
         return [], (
-            "API 연결에 실패했습니다. "
-            "네트워크와 API 설정을 확인해 주세요."
+            "API 요청 처리 중 문제가 발생했습니다."
         )
 
     except ET.ParseError:
+
         return [], (
             "API 응답을 XML로 해석하지 못했습니다. "
             "API 응답 형식을 확인해 주세요."
         )
 
     except Exception as error:
+
         return [], (
-            f"검색 중 오류가 발생했습니다 "
+            f"검색 중 예상하지 못한 오류가 발생했습니다 "
             f"({type(error).__name__})."
         )
 
@@ -149,7 +197,8 @@ def search_hira_disease(search_text):
 st.title("🔎 HIRA 질병정보 검색")
 
 st.write(
-    "건강보험심사평가원 API를 이용해 질병명과 상병코드를 조회합니다."
+    "건강보험심사평가원 API를 이용해 "
+    "질병명과 상병코드를 조회합니다."
 )
 
 st.caption(
@@ -158,10 +207,17 @@ st.caption(
     "판단하지 않습니다."
 )
 
+
+# =========================================================
+# 검색 입력
+# =========================================================
+
 with st.form("hira_disease_search_form"):
+
     search_text = st.text_input(
         "검색할 질병명",
         placeholder="예: 충수염, 지방간, 간염",
+        max_chars=MAX_SEARCH_LENGTH,
     )
 
     search_button = st.form_submit_button(
@@ -169,24 +225,94 @@ with st.form("hira_disease_search_form"):
         use_container_width=True,
     )
 
+
+# =========================================================
+# 검색 실행
+# =========================================================
+
 if search_button:
-    if not search_text.strip():
+
+    normalized_text = normalize_search_text(search_text)
+
+    if not normalized_text:
+
         st.warning("검색할 질병명을 입력해 주세요.")
 
+    elif len(normalized_text) > MAX_SEARCH_LENGTH:
+
+        st.warning(
+            f"검색어는 {MAX_SEARCH_LENGTH}자 이하로 입력해 주세요."
+        )
+
     else:
+
         with st.spinner("질병정보를 검색하고 있습니다..."):
-            results, error_message = search_hira_disease(search_text)
+
+            results, error_message = search_hira_disease(
+                normalized_text
+            )
 
         if error_message:
+
             st.error(error_message)
 
         else:
-            st.success(f"검색 결과: {len(results)}건")
 
-            for index, disease in enumerate(results, start=1):
-                with st.container(border=True):
-                    st.markdown(
-                        f"**{index}. {disease['질병명']}**"
-                    )
-                    st.write(f"상병코드: {disease['상병코드']}")
-                    st.write(f"영문명: {disease['영문명']}")
+            st.session_state["hira_search_results"] = results
+            st.session_state["hira_search_keyword"] = normalized_text
+
+
+# =========================================================
+# 검색 결과 출력
+# =========================================================
+
+if "hira_search_results" in st.session_state:
+
+    results = st.session_state["hira_search_results"]
+    keyword = st.session_state.get(
+        "hira_search_keyword",
+        ""
+    )
+
+    st.divider()
+
+    st.subheader("📋 검색 결과")
+
+    st.caption(f"검색어: {keyword}")
+
+    st.success(f"검색 결과: {len(results)}건")
+
+    for index, disease in enumerate(results, start=1):
+
+        with st.container(border=True):
+
+            st.markdown(
+                f"**{index}. {disease['질병명']}**"
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.caption("상병코드")
+                st.code(disease["상병코드"])
+
+            with col2:
+                st.caption("영문명")
+                st.write(disease["영문명"])
+
+    if st.button(
+        "검색 결과 지우기",
+        use_container_width=True
+    ):
+
+        st.session_state.pop(
+            "hira_search_results",
+            None
+        )
+
+        st.session_state.pop(
+            "hira_search_keyword",
+            None
+        )
+
+        st.rerun()
