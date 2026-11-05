@@ -683,10 +683,14 @@ def create_body_visualization(result, gender):
 
     organ = result["organ"]
 
-    x, y = ORGAN_POSITION.get(
-        organ,
-        (0, 3)
-    )
+    # 장기 위치 데이터 확인
+    organ_position = ORGAN_POSITION.get(organ)
+    has_position = organ_position is not None
+
+    if has_position:
+        x, y = organ_position
+    else:
+        x, y = 0, 0
 
     organ_color = DISEASE_DATA[
         result["disease"]
@@ -715,7 +719,6 @@ def create_body_visualization(result, gender):
 
     if gender == "여아":
 
-        # 조금 더 둥근 형태의 몸통
         body_path = (
             "M -0.42 4.8 "
             "L 0.42 4.8 "
@@ -732,7 +735,6 @@ def create_body_visualization(result, gender):
 
     else:
 
-        # 조금 더 직선적인 몸통
         body_path = (
             "M -0.48 4.8 "
             "L 0.48 4.8 "
@@ -824,20 +826,12 @@ def create_body_visualization(result, gender):
         fig.add_trace(
             go.Scatter(
                 x=[
-                    -0.28,
-                    -0.40,
-                    -0.40,
-                    0.40,
-                    0.40,
-                    0.28
+                    -0.28, -0.40, -0.40,
+                    0.40, 0.40, 0.28
                 ],
                 y=[
-                    2.25,
-                    2.45,
-                    2.95,
-                    2.95,
-                    2.45,
-                    2.25
+                    2.25, 2.45, 2.95,
+                    2.95, 2.45, 2.25
                 ],
                 mode="lines",
                 line=dict(
@@ -853,16 +847,12 @@ def create_body_visualization(result, gender):
         fig.add_trace(
             go.Scatter(
                 x=[
-                    -0.25,
-                    0.25,
-                    -0.25,
-                    0.25
+                    -0.25, 0.25,
+                    -0.25, 0.25
                 ],
                 y=[
-                    2.55,
-                    2.65,
-                    2.75,
-                    2.85
+                    2.55, 2.65,
+                    2.75, 2.85
                 ],
                 mode="lines",
                 line=dict(
@@ -877,14 +867,8 @@ def create_body_visualization(result, gender):
         # 충수
         fig.add_trace(
             go.Scatter(
-                x=[
-                    -0.28,
-                    -0.48
-                ],
-                y=[
-                    2.35,
-                    2.20
-                ],
+                x=[-0.28, -0.48],
+                y=[2.35, 2.20],
                 mode="lines",
                 line=dict(
                     width=15,
@@ -919,20 +903,12 @@ def create_body_visualization(result, gender):
         fig.add_trace(
             go.Scatter(
                 x=[
-                    -0.30,
-                    -0.40,
-                    -0.40,
-                    0.40,
-                    0.40,
-                    0.30
+                    -0.30, -0.40, -0.40,
+                    0.40, 0.40, 0.30
                 ],
                 y=[
-                    2.30,
-                    2.45,
-                    3.00,
-                    3.00,
-                    2.45,
-                    2.30
+                    2.30, 2.45, 3.00,
+                    3.00, 2.45, 2.30
                 ],
                 mode="lines",
                 line=dict(
@@ -947,16 +923,12 @@ def create_body_visualization(result, gender):
         fig.add_trace(
             go.Scatter(
                 x=[
-                    -0.25,
-                    0.25,
-                    -0.20,
-                    0.25
+                    -0.25, 0.25,
+                    -0.20, 0.25
                 ],
                 y=[
-                    2.45,
-                    2.55,
-                    2.75,
-                    2.90
+                    2.45, 2.55,
+                    2.75, 2.90
                 ],
                 mode="lines",
                 line=dict(
@@ -973,18 +945,12 @@ def create_body_visualization(result, gender):
         fig.add_trace(
             go.Scatter(
                 x=[
-                    0.05,
-                    0.25,
-                    0.38,
-                    0.15,
-                    -0.05
+                    0.05, 0.25, 0.38,
+                    0.15, -0.05
                 ],
                 y=[
-                    3.50,
-                    3.45,
-                    3.25,
-                    3.05,
-                    3.15
+                    3.50, 3.45, 3.25,
+                    3.05, 3.15
                 ],
                 mode="lines",
                 line=dict(
@@ -1066,45 +1032,69 @@ def create_body_visualization(result, gender):
     # 질환 부위 강조
     # =====================================================
 
-    fig.add_shape(
-        type="circle",
-        x0=x - 0.32,
-        x1=x + 0.32,
-        y0=y - 0.32,
-        y1=y + 0.32,
-        fillcolor="rgba(255,255,255,0)",
-        line=dict(
-            color="#FF1744",
-            width=5
+    if has_position:
+
+        fig.add_shape(
+            type="circle",
+            x0=x - 0.32,
+            x1=x + 0.32,
+            y0=y - 0.32,
+            y1=y + 0.32,
+            fillcolor="rgba(255,255,255,0)",
+            line=dict(
+                color="#FF1744",
+                width=5
+            )
         )
-    )
 
     # =====================================================
     # 장기 이름
     # =====================================================
 
-    fig.add_annotation(
-        x=x,
-        y=y,
-        ax=x + 0.75,
-        ay=y + 0.55,
-        text=(
-            f"<b>{organ}</b><br>"
-            f"{result['body_part']}"
-        ),
-        showarrow=True,
-        arrowhead=2,
-        arrowsize=1.2,
-        arrowwidth=3,
-        font=dict(
-            size=14,
-            color="#333333"
-        ),
-        bgcolor="white",
-        bordercolor="#FF1744",
-        borderwidth=2,
-        borderpad=8
-    )
+    if has_position:
+
+        fig.add_annotation(
+            x=x,
+            y=y,
+            ax=x + 0.75,
+            ay=y + 0.55,
+            text=(
+                f"<b>{organ}</b><br>"
+                f"{result['body_part']}"
+            ),
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1.2,
+            arrowwidth=3,
+            font=dict(
+                size=14,
+                color="#333333"
+            ),
+            bgcolor="white",
+            bordercolor="#FF1744",
+            borderwidth=2,
+            borderpad=8
+        )
+
+    else:
+
+        fig.add_annotation(
+            x=0,
+            y=5.0,
+            text=(
+                f"<b>{organ}</b><br>"
+                "해부학적 위치 데이터 준비 중"
+            ),
+            showarrow=False,
+            font=dict(
+                size=14,
+                color="#D32F2F"
+            ),
+            bgcolor="white",
+            bordercolor="#D32F2F",
+            borderwidth=2,
+            borderpad=8
+        )
 
     # =====================================================
     # 레이아웃
