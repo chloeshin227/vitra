@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 import xml.etree.ElementTree as ET
+import csv
+from io import StringIO
 
 
 # =========================================================
@@ -274,6 +276,27 @@ if "hira_search_results" in st.session_state:
                 st.caption("영문명")
                 st.write(disease["영문명"])
 
+        # =====================================================
+    # 검색 결과 CSV 다운로드
+    # =====================================================
+
+    csv_buffer = StringIO()
+
+    writer = csv.DictWriter(
+        csv_buffer,
+        fieldnames=["질병명", "상병코드", "영문명"]
+    )
+
+    writer.writeheader()
+    writer.writerows(results)
+
+    st.download_button(
+        label="📥 검색 결과 CSV 다운로드",
+        data="\ufeff" + csv_buffer.getvalue(),
+        file_name=f"HIRA_질병정보_{keyword}.csv",
+        mime="text/csv",
+        use_container_width=True,
+    )
     if st.button(
         "검색 결과 지우기",
         use_container_width=True
