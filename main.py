@@ -1122,25 +1122,24 @@ def create_body_visualization(result, gender):
                 width=2
             )
         )
-    # =====================================================
-    # 질환 부위 강조
-    # =====================================================
-
     if has_position:
+
+        highlight_size = 0.28
 
         fig.add_shape(
             type="circle",
-            x0=x - 0.32,
-            x1=x + 0.32,
-            y0=y - 0.32,
-            y1=y + 0.32,
-            fillcolor="rgba(255,255,255,0)",
+            x0=x - highlight_size,
+            x1=x + highlight_size,
+            y0=y - highlight_size,
+            y1=y + highlight_size,
+            fillcolor="rgba(255,23,68,0.10)",
             line=dict(
                 color="#FF1744",
-                width=5
-            )
+                width=3
+            ),
+            layer="above"
         )
-
+        
     # =====================================================
     # 장기 이름
     # =====================================================
