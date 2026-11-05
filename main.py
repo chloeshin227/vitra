@@ -1512,8 +1512,9 @@ medical_text = st.text_area(
 )
 
 
+
 # =========================================================
-# 분석 버튼
+# 분석 버튼 및 질환 분석
 # =========================================================
 
 if st.button(
@@ -1521,68 +1522,64 @@ if st.button(
     type="primary",
     use_container_width=True
 ):
-
     st.session_state.medical_text = medical_text
 
-result = analyze_medical_info(medical_text)
+    if not medical_text.strip():
+        st.warning("검사 결과 또는 진료 내용을 먼저 입력해 주세요.")
 
-if result is None:
-
-    st.session_state.analysis_result = None
-
-    search_text = "".join(medical_text.split())
-
-    disease_names = list(DISEASE_DATA.keys())
-
-    suggestions = get_close_matches(
-        search_text,
-        disease_names,
-        n=3,
-        cutoff=0.3
-    )
-
-    if suggestions:
-        st.error(
-            "현재 등록된 질환 정보에서 "
-            "관련 질환을 찾지 못했습니다."
-        )
-
-        st.info("혹시 다음 질환을 찾으셨나요?")
-
-        for disease in suggestions:
-            st.write(f"• {disease}")
+        st.session_state.analysis_result = None
 
     else:
-        st.error(
-            "현재 등록된 질환 정보에서 "
-            "관련 질환을 찾지 못했습니다."
-        )
+        result = analyze_medical_info(medical_text)
 
-else:
+        st.session_state.analysis_result = result
+        st.session_state.selected_step = 1
 
-    st.session_state.analysis_result = result
-    st.session_state.selected_step = 1
+        if result is None:
+            st.warning(
+                "현재 등록된 질환 정보에서 "
+                "관련 질환을 찾지 못했습니다."
+            )
+
+            search_text = "".join(medical_text.split())
+            disease_names = list(DISEASE_DATA.keys())
+
+            suggestions = get_close_matches(
+                search_text,
+                disease_names,
+                n=3,
+                cutoff=0.3
+            )
+
+            if suggestions:
+                st.info("혹시 다음 질환을 찾으셨나요?")
+
+                for disease_name in suggestions:
+                    st.write(f"• {disease_name}")
+
+        else:
+            st.success(
+                f"{result['disease']} 관련 정보를 찾았습니다."
+            )
+
 
 # =========================================================
-# 결과
+# 분석 결과 표시
 # =========================================================
 
 result = st.session_state.analysis_result
-
 
 if result is not None:
 
     disease = result["disease"]
 
-    information = DISEASE_DATA[
-        disease
-    ]
-
-    # -----------------------------------------------------
-    # 질환 분석
-    # -----------------------------------------------------
+    information = DISEASE_DATA[disease]
 
     st.divider()
+
+    # -----------------------------------------------------
+    # 질환 분석 결과
+    # -----------------------------------------------------
 
     st.header("3. 질환 분석")
 
@@ -1592,30 +1589,16 @@ if result is not None:
 
         st.subheader("분석 결과")
 
+        st.write(f"**질환:** {disease}")
+        st.write(f"**관련 장기:** {result['organ']}")
+        st.write(f"**신체 부위:** {result['body_part']}")
         st.write(
-            f"**질환:** {disease}"
-        )
-
-        st.write(
-            f"**관련 장기:** {result['organ']}"
-        )
-
-        st.write(
-            f"**신체 부위:** {result['body_part']}"
-        )
-
-        st.write(
-            f"**환자 성별:** "
-            f"{st.session_state.gender}"
+            f"**환자 성별:** {st.session_state.gender}"
         )
 
     with col2:
 
-        st.info(
-            information[
-                "easy_explanation"
-            ]
-        )
+        st.info(information["easy_explanation"])
 
     # -----------------------------------------------------
     # 신체 시각화
@@ -1626,9 +1609,8 @@ if result is not None:
     st.header("4. 신체 부위 시각화")
 
     st.write(
-        "선택한 환자 성별을 반영하여 "
-        "질환과 관련된 장기를 인체 내부의 위치와 함께 "
-        "강조하여 표시합니다."
+        "질환과 관련된 장기를 인체의 위치와 함께 "
+        "시각적으로 확인할 수 있습니다."
     )
 
     body_figure = create_body_visualization(
@@ -1646,124 +1628,45 @@ if result is not None:
     )
 
     # -----------------------------------------------------
-    # 치료 과정
+    # 치료·수술 과정 페이지 이동
     # -----------------------------------------------------
 
     st.divider()
 
-    st.header("5. 치료·수술 과정 시각화")
+    st.header("5. 치료·수술 과정")
 
     st.write(
-        "치료 또는 수술 과정을 단계별로 "
-        "확인할 수 있습니다."
+        "선택한 질환의 치료 및 수술 과정을 "
+        "별도 페이지에서 단계별로 확인할 수 있습니다."
     )
 
-    steps = information[
-        "surgery_steps"
-    ]
-
-    st.subheader("단계 선택")
-
-    button_columns = st.columns(
-        len(steps)
-    )
-
-    for i, step in enumerate(steps):
-
-        with button_columns[i]:
-
-            if st.button(
-                f"{step['icon']} {i + 1}단계",
-                key=f"step_{i}",
-                use_container_width=True
-            ):
-
-                st.session_state.selected_step = (
-                    i + 1
-                )
-
-    surgery_figure = create_surgery_visualization(
-        result,
-        st.session_state.selected_step
-    )
-
-    st.plotly_chart(
-        surgery_figure,
+    if st.button(
+        "🔬 치료·수술 과정 자세히 보기",
+        key="open_surgery_page",
         use_container_width=True
-    )
-
-    current_step = steps[
-        st.session_state.selected_step - 1
-    ]
-
-    st.subheader(
-        f"{current_step['icon']} "
-        f"{st.session_state.selected_step}단계. "
-        f"{current_step['title']}"
-    )
-
-    st.info(
-        current_step["description"]
-    )
-
-    with st.expander(
-        "📋 전체 치료·수술 과정 보기"
     ):
 
-        for i, step in enumerate(steps):
+        st.session_state.surgery_disease = disease
 
-            st.markdown(
-                f"### {i + 1}. "
-                f"{step['icon']} "
-                f"{step['title']}"
-            )
+        st.session_state.surgery_steps = (
+            information["surgery_steps"]
+        )
 
-            st.write(
-                step["description"]
-            )
+        st.session_state.selected_step = 1
 
-            if i < len(steps) - 1:
-                st.divider()
+        st.switch_page(
+            "pages/surgery_visualization.py"
+        )
 
-    # -----------------------------------------------------
-    # 치료 후 변화
-    # -----------------------------------------------------
 
-    st.divider()
-
-    st.header("6. 치료 후 예상되는 변화")
-
-    st.write(
-        "치료 방법과 회복 과정은 "
-        "환자의 상태에 따라 달라질 수 있습니다."
-    )
-
-    st.info(
-        "치료 후에는 질환과 관련된 증상이 호전되는지 "
-        "관찰하고, 수술을 받은 경우 수술 부위와 "
-        "신체 기능의 회복 상태를 확인합니다."
-    )
-
-if st.button(
-    "🔬 치료·수술 과정 자세히 보기",
-    use_container_width=True
-):
-    st.session_state.surgery_disease = disease
-    st.session_state.surgery_steps = DISEASE_DATA[disease]["surgery_steps"]
-    st.switch_page("pages/surgery_visualization.py")
-    
 # =========================================================
 # 지원 질환
 # =========================================================
 
 st.divider()
 
-with st.expander(
-    "📋 현재 분석 가능한 질환"
-):
+with st.expander("📋 현재 분석 가능한 질환"):
 
-    for disease in DISEASE_DATA:
+    for disease_name in DISEASE_DATA:
 
-        st.write(
-            f"• {disease}"
-        )
+        st.write(f"• {disease_name}")
