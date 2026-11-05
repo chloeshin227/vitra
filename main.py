@@ -127,48 +127,6 @@ DISEASE_DATA = {
         "organ_color": "#FF9800"
     },
 
-    "장중첩증": {
-        "keywords": [
-            "장중첩증",
-            "장 중첩",
-            "장중첩"
-        ],
-        "organ": "장",
-        "body_part": "복부",
-        "easy_explanation": (
-            "장중첩증은 장의 한 부분이 다른 부분의 안쪽으로 말려 들어가는 상태입니다."
-        ),
-        "surgery_title": "장중첩증 치료 과정",
-        "surgery_steps": [
-            {
-                "title": "검사",
-                "description": "장중첩이 발생한 위치와 상태를 확인합니다.",
-                "icon": "🔎"
-            },
-            {
-                "title": "정복 시도",
-                "description": "환자의 상태에 따라 먼저 비수술적 치료를 시도할 수 있습니다.",
-                "icon": "🩺"
-            },
-            {
-                "title": "장 확인",
-                "description": "필요한 경우 수술을 통해 장의 상태를 확인합니다.",
-                "icon": "🔍"
-            },
-            {
-                "title": "위치 복원",
-                "description": "말려 들어간 장을 정상적인 위치로 되돌립니다.",
-                "icon": "↩️"
-            },
-            {
-                "title": "상태 확인",
-                "description": "장 손상 여부를 확인하고 치료를 마무리합니다.",
-                "icon": "🩹"
-            }
-        ],
-        "organ_color": "#FF9800"
-    },
-
     "장회전이상": {
         "keywords": [
             "장회전이상",
