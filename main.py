@@ -1190,6 +1190,40 @@ def create_body_visualization(result, gender):
             borderpad=8
         )
 
+        # =====================================================
+    # 인체 좌우 방향 안내
+    # =====================================================
+
+    fig.add_annotation(
+        x=-1.05,
+        y=5.85,
+        text="<b>환자의 오른쪽</b>",
+        showarrow=False,
+        font=dict(
+            size=12,
+            color="#333333"
+        ),
+        bgcolor="#E3F2FD",
+        bordercolor="#90CAF9",
+        borderwidth=1,
+        borderpad=5
+    )
+
+    fig.add_annotation(
+        x=1.05,
+        y=5.85,
+        text="<b>환자의 왼쪽</b>",
+        showarrow=False,
+        font=dict(
+            size=12,
+            color="#333333"
+        ),
+        bgcolor="#E3F2FD",
+        bordercolor="#90CAF9",
+        borderwidth=1,
+        borderpad=5
+    )
+    
     # =====================================================
     # 레이아웃
     # =====================================================
