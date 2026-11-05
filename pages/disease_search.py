@@ -232,6 +232,17 @@ with st.form("hira_disease_search_form"):
 
 if search_button:
 
+    # 새로운 검색을 시작하면 이전 결과 초기화
+    st.session_state.pop(
+        "hira_search_results",
+        None
+    )
+
+    st.session_state.pop(
+        "hira_search_keyword",
+        None
+    )
+
     normalized_text = normalize_search_text(search_text)
 
     if not normalized_text:
