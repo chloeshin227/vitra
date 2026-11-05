@@ -1556,6 +1556,11 @@ if result is not None:
         st.write(
             f"**환자 성별:** {st.session_state.gender}"
         )
+        st.info(
+    "본 분석은 입력된 의료정보에서 등록된 질환 키워드를 "
+    "검색하는 기능이며, 실제 의학적 진단을 제공하지 않습니다. "
+    "정확한 진단과 치료는 의료진의 평가가 필요합니다."
+)
 
     with col2:
 
