@@ -1397,7 +1397,6 @@ st.divider()
 # 사이드바
 # =========================================================
 
-
 with st.sidebar:
 
     st.header("🩺 VITRA")
@@ -1420,7 +1419,7 @@ with st.sidebar:
         use_container_width=True
     ):
         st.switch_page("pages/body_visualization.py")
-        
+
     if st.button(
         "🔎 질환 검색",
         use_container_width=True
@@ -1435,36 +1434,16 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("👤 환자 정보")
-
-    gender = st.radio(
-        "환자의 성별을 선택하세요.",
-        ["여아", "남아"],
-        horizontal=True,
-        index=(
-            0
-            if st.session_state.gender == "여아"
-            else 1
-        )
-    )
-
-    st.session_state.gender = gender
-
-    st.divider()
-
     if st.button(
         "🔄 새로운 환자 입력",
         use_container_width=True
     ):
-
         st.session_state.medical_text = ""
         st.session_state.analysis_result = None
         st.session_state.selected_step = 1
         st.session_state.gender = "여아"
 
         st.rerun()
-
-
 
 # =========================================================
 # 환자 정보 표시
