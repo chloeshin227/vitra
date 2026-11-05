@@ -1435,15 +1435,16 @@ with st.sidebar:
     st.divider()
 
     if st.button(
-        "🔄 새로운 환자 입력",
-        use_container_width=True
-    ):
-        st.session_state.medical_text = ""
-        st.session_state.analysis_result = None
-        st.session_state.selected_step = 1
-        st.session_state.gender = "여아"
+    "🔄 새로운 환자 입력",
+    use_container_width=True
+):
+    st.session_state.medical_text = ""
+    st.session_state.medical_text_input = ""
+    st.session_state.analysis_result = None
+    st.session_state.selected_step = 1
+    st.session_state.gender = "여아"
 
-        st.rerun()
+    st.rerun()
 
 # =========================================================
 # 환자 정보 표시
@@ -1497,12 +1498,9 @@ st.header("2. 검사·진료 정보 입력")
 
 medical_text = st.text_area(
     "검사 결과 또는 진료 내용을 입력하세요.",
-    value=st.session_state.medical_text,
-    placeholder=(
-        "예: 복부 초음파에서 "
-        "충수돌기 주변에 염증 소견이 관찰됨."
-    ),
-    height=150
+    placeholder="예: 복부 초음파에서 충수돌기 주변에 염증 소견이 관찰됨.",
+    height=150,
+    key="medical_text_input"
 )
 
 
