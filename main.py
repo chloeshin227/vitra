@@ -1268,22 +1268,12 @@ st.markdown("""
 # 주요 기능 카드
 # =========================================================
 
-
-# =========================================================
-# VITRA 주요 기능 안내
-# =========================================================
-
 st.markdown("### VITRA에서 할 수 있는 것")
 
-# =========================================================
-# 첫 번째 행: 질환 검색 / 신체 부위 시각화
-# =========================================================
+# 첫 번째 행
+feature1, feature2, feature3 = st.columns(3)
 
-feature1, feature2 = st.columns(2)
-
-# 질환 검색
 with feature1:
-
     st.markdown("""
     <div class="feature-card">
         <div class="feature-icon">🩺</div>
@@ -1295,24 +1285,28 @@ with feature1:
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button(
-        "🩺 질환 검색하기",
-        key="disease_search_button",
-        use_container_width=True
-    ):
+    if st.button("🩺 질환 검색하기", key="disease_search_button",
+                 use_container_width=True):
         st.switch_page("pages/disease_search.py")
 
-    if st.button(
-        "⚖️ 치료 방법 비교하기",
-        key="treatment_comparison_button",
-        use_container_width=True
-    ):
+with feature2:
+    st.markdown("""
+    <div class="feature-card">
+        <div class="feature-icon">⚖️</div>
+        <div class="feature-title">치료 방법 비교</div>
+        <div class="feature-text">
+            질환별 치료 방법의 특징과 차이를
+            비교하여 살펴볼 수 있습니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button("⚖️ 치료 방법 비교하기",
+                 key="treatment_comparison_button",
+                 use_container_width=True):
         st.switch_page("pages/treatment_comparison.py")
 
-
-# 신체 부위 시각화
-with feature2:
-
+with feature3:
     st.markdown("""
     <div class="feature-card">
         <div class="feature-icon">🫀</div>
@@ -1324,19 +1318,17 @@ with feature2:
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button(
-        "🫀 신체 부위 탐색하기",
-        key="body_visualization_button",
-        use_container_width=True
-    ):
+    if st.button("🫀 신체 부위 탐색하기",
+                 key="body_visualization_button",
+                 use_container_width=True):
         st.switch_page("pages/body_visualization.py")
 
-
 st.markdown("<br>", unsafe_allow_html=True)
-# 두 번째 행
-feature3, feature4 = st.columns(2)
 
-with feature3:
+# 두 번째 행
+feature4, feature5 = st.columns(2)
+
+with feature4:
     st.markdown("""
     <div class="feature-card">
         <div class="feature-icon">🔬</div>
@@ -1348,15 +1340,12 @@ with feature3:
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button(
-        "🔬 치료·수술 과정 살펴보기",
-        key="surgery_visualization_button",
-        use_container_width=True
-    ):
+    if st.button("🔬 치료·수술 과정 살펴보기",
+                 key="surgery_visualization_button",
+                 use_container_width=True):
         st.switch_page("pages/surgery_visualization.py")
 
-
-with feature4:
+with feature5:
     st.markdown("""
     <div class="feature-card">
         <div class="feature-icon">💊</div>
@@ -1368,13 +1357,10 @@ with feature4:
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button(
-        "💊 의약품 정보 탐색하기",
-        key="medicine_button",
-        use_container_width=True
-    ):
+    if st.button("💊 의약품 정보 탐색하기",
+                 key="medicine_button",
+                 use_container_width=True):
         st.switch_page("pages/medicine.py")
-
 
 st.divider()
 
