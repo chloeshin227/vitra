@@ -45,17 +45,8 @@ def normalize_search_text(search_text):
 # =========================================================
 # HIRA 질병정보 검색
 # =========================================================
-
 @st.cache_data(ttl=CACHE_TTL, show_spinner=False)
-def search_hira_disease(search_text):
-
-    api_key = st.secrets.get("HIRA_API_KEY", "")
-
-    if not api_key:
-        return [], (
-            "HIRA_API_KEY가 없습니다. "
-            "Streamlit Secrets 설정을 확인해 주세요."
-        )
+def fetch_hira_response(search_text, api_key):
 
     params = {
         "ServiceKey": api_key,
@@ -67,22 +58,28 @@ def search_hira_disease(search_text):
         "searchText": search_text,
     }
 
+    response = requests.get(
+        HIRA_DISEASE_API_URL,
+        params=params,
+        timeout=15,
+    )
+
+    response.raise_for_status()
+
+    return response.content
+
+
+def search_hira_disease(search_text):
+
+    api_key = st.secrets.get("HIRA_API_KEY", "")
+
+    if not api_key:
+        return [], "HIRA_API_KEY가 없습니다. Streamlit Secrets 설정을 확인해 주세요."
+
     try:
 
-        response = requests.get(
-            HIRA_DISEASE_API_URL,
-            params=params,
-            timeout=15,
-        )
-
-        if response.status_code != 200:
-
-            return [], (
-                f"API 요청 실패 (HTTP {response.status_code}). "
-                "API 주소와 요청 매개변수를 확인해 주세요."
-            )
-
-        root = ET.fromstring(response.content)
+        content = fetch_hira_response(search_text, api_key)
+        root = ET.fromstring(content)
 
         result_code = get_xml_value(
             root,
@@ -95,7 +92,6 @@ def search_hira_disease(search_text):
         )
 
         if result_code and result_code not in ("00", "0000"):
-
             return [], (
                 f"API 응답 오류: {result_code} - "
                 f"{result_message or '요청 실패'}"
@@ -106,24 +102,19 @@ def search_hira_disease(search_text):
 
         for element in root.iter():
 
-            tag = element.tag.split("}")[-1].lower()
-
-            if tag != "item":
+            if element.tag.split("}")[-1].lower() != "item":
                 continue
 
             disease_name = get_xml_value(
-                element,
-                ["sickNm", "SICK_NM"]
+                element, ["sickNm", "SICK_NM"]
             )
 
             disease_code = get_xml_value(
-                element,
-                ["sickCd", "SICK_CD"]
+                element, ["sickCd", "SICK_CD"]
             )
 
             english_name = get_xml_value(
-                element,
-                ["engNm", "ENG_NM", "engSickNm"]
+                element, ["engNm", "ENG_NM", "engSickNm"]
             )
 
             if not disease_name and not disease_code:
@@ -146,48 +137,21 @@ def search_hira_disease(search_text):
             })
 
         if not items:
-
-            return [], (
-                "검색 결과가 없습니다. "
-                "다른 질병명을 입력해 보세요."
-            )
+            return [], "검색 결과가 없습니다. 다른 질병명을 입력해 보세요."
 
         return items, None
 
     except requests.exceptions.Timeout:
-
-        return [], (
-            "API 응답 시간이 초과되었습니다. "
-            "잠시 후 다시 시도해 주세요."
-        )
-
-    except requests.exceptions.ConnectionError:
-
-        return [], (
-            "API 서버에 연결할 수 없습니다. "
-            "네트워크 상태를 확인해 주세요."
-        )
+        return [], "API 응답 시간이 초과되었습니다. 다시 시도해 주세요."
 
     except requests.exceptions.RequestException:
-
-        return [], (
-            "API 요청 처리 중 문제가 발생했습니다."
-        )
+        return [], "API 연결 또는 요청에 실패했습니다. 네트워크와 API 설정을 확인해 주세요."
 
     except ET.ParseError:
-
-        return [], (
-            "API 응답을 XML로 해석하지 못했습니다. "
-            "API 응답 형식을 확인해 주세요."
-        )
+        return [], "API 응답을 XML로 해석하지 못했습니다."
 
     except Exception as error:
-
-        return [], (
-            f"검색 중 예상하지 못한 오류가 발생했습니다 "
-            f"({type(error).__name__})."
-        )
-
+        return [], f"검색 중 오류가 발생했습니다 ({type(error).__name__})."
 
 # =========================================================
 # 화면
