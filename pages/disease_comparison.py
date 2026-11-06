@@ -181,20 +181,6 @@ else:
         hide_index=True
     )
 
-    st.divider()
-    st.subheader("5. 참고 자료 및 출처")
-
-    for disease_name in [disease1, disease2]:
-        sources = TREATMENT_DATA[disease_name]["sources"]
-
-        with st.expander(f"{disease_name} 참고 자료"):
-            if sources:
-                for source in sources:
-                    st.markdown(f"- {source}")
-            else:
-                st.write("등록된 참고 자료가 없습니다.")
-
-
 # =========================================================
 # 하단 안내
 # =========================================================
