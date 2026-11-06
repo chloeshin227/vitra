@@ -235,3 +235,26 @@ if search_button:
 
             st.session_state["hira_search_results"] = results
             st.session_state["hira_search_keyword"] = normalized_text
+# =========================================================
+# 검색 결과 출력
+# =========================================================
+
+if "hira_search_results" in st.session_state:
+
+    st.divider()
+
+    st.subheader("검색 결과")
+
+    st.caption(
+        f"검색어: {st.session_state['hira_search_keyword']}"
+    )
+
+    results = st.session_state["hira_search_results"]
+
+    st.success(f"총 {len(results)}개의 질병정보를 찾았습니다.")
+
+    st.dataframe(
+        results,
+        use_container_width=True,
+        hide_index=True,
+    )
