@@ -29,7 +29,7 @@ def show_body_image():
 
     # 성별 선택
     gender = st.radio(
-        "신체 이미지 선택",
+        "환아 성별 선택",
         ["남성", "여성"],
         horizontal=True,
         key="body_gender",
