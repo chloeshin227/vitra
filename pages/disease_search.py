@@ -1,8 +1,6 @@
 import streamlit as st
 import requests
 import xml.etree.ElementTree as ET
-import csv
-from io import StringIO
 
 
 # =========================================================
@@ -47,12 +45,13 @@ def normalize_search_text(search_text):
 # =========================================================
 # HIRA 질병정보 검색
 # =========================================================
+
 @st.cache_data(ttl=CACHE_TTL, show_spinner=False)
-def fetch_hira_response(search_text, api_key, page_no):
+def fetch_hira_response(search_text, api_key):
 
     params = {
         "ServiceKey": api_key,
-        "pageNo": str(page_no),
+        "pageNo": "1",
         "numOfRows": "20",
         "sickType": "1",
         "medTp": "1",
@@ -71,7 +70,7 @@ def fetch_hira_response(search_text, api_key, page_no):
     return response.content
 
 
-def search_hira_disease(search_text, page_no=1):
+def search_hira_disease(search_text):
 
     api_key = st.secrets.get("HIRA_API_KEY", "")
 
@@ -82,9 +81,9 @@ def search_hira_disease(search_text, page_no=1):
 
         content = fetch_hira_response(
             search_text,
-            api_key,
-            page_no
+            api_key
         )
+
         root = ET.fromstring(content)
 
         result_code = get_xml_value(
@@ -154,6 +153,7 @@ def search_hira_disease(search_text, page_no=1):
     except Exception as error:
         return [], f"검색 중 오류가 발생했습니다 ({type(error).__name__})."
 
+
 # =========================================================
 # 화면
 # =========================================================
@@ -182,14 +182,6 @@ with st.form("hira_disease_search_form"):
         "검색할 질병명",
         placeholder="예: 충수염, 지방간, 간염",
         max_chars=MAX_SEARCH_LENGTH,
-    )
-
-    page_no = st.number_input(
-        "검색 페이지",
-        min_value=1,
-        max_value=100,
-        value=1,
-        step=1,
     )
 
     search_button = st.form_submit_button(
@@ -232,9 +224,9 @@ if search_button:
         with st.spinner("질병정보를 검색하고 있습니다..."):
 
             results, error_message = search_hira_disease(
-                normalized_text,
-                int(page_no)
+                normalized_text
             )
+
         if error_message:
 
             st.error(error_message)
