@@ -223,8 +223,10 @@ if search_button:
 
         with st.spinner("질병정보를 검색하고 있습니다..."):
 
+            api_search_text = convert_disease_alias(normalized_text)
+
             results, error_message = search_hira_disease(
-                normalized_text
+                api_search_text
             )
 
         if error_message:
