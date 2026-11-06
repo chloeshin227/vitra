@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import base64
 from io import BytesIO
@@ -51,7 +50,7 @@ def show_body_image():
         "뇌": (50, 9),
         "갑상샘": (50, 19),
         "폐": (43, 29),
-        "심장": (48, 32),
+        "심장": (50, 32),
         "간": (39, 40),
         "위": (57, 41),
         "신장": (42, 43),
