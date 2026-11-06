@@ -34,7 +34,7 @@ def show_body_image():
         key="body_gender",
     )
 
-    if gender == "남성":
+    if gender == "남아":
         image_path = image_dir / "boybody.png"
     else:
         image_path = image_dir / "girlbody.png"
