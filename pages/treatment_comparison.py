@@ -1469,136 +1469,33 @@ st.info(
 
 
 # =========================================================
-# 탭 구성
+# 질환별 치료 비교
 # =========================================================
 
-tab1, tab2 = st.tabs([
-    "질환별 치료 비교",
-    "두 질환 비교"
-])
+st.subheader("질환 선택")
 
+disease = st.selectbox(
+    "비교할 질환을 선택하세요.",
+    DISEASE_LIST,
+    key="single_disease"
+)
 
-# =========================================================
-# 탭 1: 질환별 치료 비교
-# =========================================================
-
-with tab1:
-
-    st.subheader("1. 질환 선택")
-
-    disease = st.selectbox(
-        "비교할 질환을 선택하세요.",
-        DISEASE_LIST,
-        key="single_disease"
-    )
-
-    display_disease_detail(
-        disease,
-        "single"
-    )
+display_disease_detail(
+    disease,
+    "single"
+)
 
 
 # =========================================================
-# 탭 2: 두 질환 비교
+# 하단 안내
 # =========================================================
 
-with tab2:
+st.divider()
 
-    st.subheader("두 질환 비교")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-
-        disease1 = st.selectbox(
-            "첫 번째 질환",
-            DISEASE_LIST,
-            key="compare_disease1"
-        )
-
-    with col2:
-
-        disease2 = st.selectbox(
-            "두 번째 질환",
-            DISEASE_LIST,
-            index=1,
-            key="compare_disease2"
-        )
-
-    if disease1 == disease2:
-
-        st.warning(
-            "서로 다른 두 질환을 선택해 주세요."
-        )
-
-    else:
-
-        st.markdown("### 비교 결과")
-
-        comparison_columns = st.columns(2)
-
-        for index, disease_name in enumerate(
-            [disease1, disease2]
-        ):
-
-            data = TREATMENT_DATA[disease_name]
-
-            with comparison_columns[index]:
-
-                st.markdown(f"#### {disease_name}")
-
-                st.write(data["summary"])
-
-                st.markdown("**등록된 치료 방법**")
-
-                for method in data["methods"]:
-                    st.markdown(
-                        f"- {method['name']} ({method['category']})"
-                    )
-
-        st.divider()
-
-        st.subheader("치료 방법 상세 비교")
-
-        for disease_name in [disease1, disease2]:
-
-            data = TREATMENT_DATA[disease_name]
-
-            with st.expander(
-                f"{disease_name}의 상세 치료 정보",
-                expanded=True
-            ):
-
-                for method in data["methods"]:
-
-                    with st.container(border=True):
-                        display_method(method)
-
-        st.divider()
-
-        st.subheader("두 질환의 치료 방법 비교표")
-
-        comparison_rows = []
-
-        for disease_name in [disease1, disease2]:
-
-            data = TREATMENT_DATA[disease_name]
-
-            for method in data["methods"]:
-
-                comparison_rows.append({
-                    "질환": disease_name,
-                    "치료 방법": method["name"],
-                    "치료 유형": method["category"],
-                    "치료 목적": method["purpose"]
-                })
-
-        st.dataframe(
-            pd.DataFrame(comparison_rows),
-            use_container_width=True,
-            hide_index=True
-        )
-
+st.caption(
+    "VITRA | 의료정보 시각화 교육용 플랫폼 · "
+    "본 자료는 진단이나 치료 결정을 대신하지 않습니다."
+)
 
 # =========================================================
 # 하단 안내
